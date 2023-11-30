@@ -8,7 +8,7 @@ fi
 
 # Extract the day number from the first argument
 day_number="$1"
-day_folder="day-$day_number"
+day_folder="day_$day_number"
 
 # Create a new cargo project
 cargo new $day_folder
