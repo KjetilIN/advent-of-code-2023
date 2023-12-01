@@ -1,18 +1,35 @@
-use std::{fs::File, io::{Read, BufRead, BufReader}, path::Path};
+use std::{fs::File, path::Path, io::{BufReader, Read}};
 
 
+
+
+/**
+ * Calculate the number for a given string with random chars
+ *  - it will always take the first number and add the last number
+ *  - safg2dsfs2 => 22 
+ *  - Will return a number that is x digits long, given x digits in the string
+ *  - takes a string slice and returns a u32
+ */
 fn number_from_string(input: &str) -> u32{
-    let mut result: u32 = 0;
+    // Save the result in a variable 
+    let mut first_digit:u32 = 0;
+    let mut last_digit:u32 = 0;
 
-    for char in input.chars(){
-        
+    // Iterate over the chars 
+    for ch in input.chars(){
+        // Check if the char is numeric
+        if ch.is_numeric(){
+            // Set the first digit if it has not been set
+            if first_digit == 0{
+                first_digit = ch.to_digit(10).unwrap()
+            }
+            // Reset the last number 
+            last_digit = ch.to_digit(10).unwrap();
+        }
     }
-
-
-    // Return the result 
-    result
+    // Return the result as a two digit number
+    first_digit*10 + last_digit
 }
-
 
 
 fn main() -> std::io::Result<()>{
@@ -38,11 +55,14 @@ fn main() -> std::io::Result<()>{
 
     // For each line we need to fine the number
     for line in content.lines(){
-        println!("{}", line);
+        // Add the number from the file to the total sum
+        total_sum_from_file += number_from_string(line.trim());
+
     }
 
+    // Print the result
+    println!("Result: {}", total_sum_from_file);
     
-
-
+    // Return OK
     Ok(())
 }
