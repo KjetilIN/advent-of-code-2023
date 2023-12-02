@@ -7,7 +7,7 @@ use std::{fs::File, path::Path, io::{BufReader, Read}, collections::HashMap};
  *  - Will return a number that is x digits long, given x digits in the string
  *  - takes a string slice and returns a u32
  */
-fn number_from_string(input: &str) -> u32{
+pub fn number_from_string(input: &str) -> u32{
     // Save the result in a variable 
     let mut first_digit:u32 = 0;
     let mut last_digit:u32 = 0;
@@ -28,7 +28,7 @@ fn number_from_string(input: &str) -> u32{
     first_digit*10 + last_digit
 }
 
-fn number_from_string_with_number_strings(input: &str, value_map: &HashMap<&str, i32>) ->u32{
+pub fn number_from_string_with_number_strings(input: &str, value_map: &HashMap<&str, i32>) ->u32{
     // Save the result in a variable 
     let mut first_digit:u32 = 0;
     let mut index_first: usize = 0;
@@ -50,19 +50,20 @@ fn number_from_string_with_number_strings(input: &str, value_map: &HashMap<&str,
         }
     }
 
-    // Check for any numbers 
+    // Iterate over all possible numbers as strings in the hashmap
     for (number_string, number) in value_map.into_iter(){
-        match input.find(number_string){
-            Some(new_index) => {
-                if new_index < index_first {
-                    index_first = new_index; 
-                    first_digit = (*number as u32).clone();
-                }else if new_index > index_last {
-                    index_last = new_index;
-                    last_digit = (*number as u32).clone();
-                }
-            }
-            None => {}
+        // Get all the indexes for all matches 
+        for new_index in input.match_indices(number_string).map(|(new_index,_)| new_index){
+
+            // If the index is lower, we found a new "left most" number
+            // If the index is higher, we found a new "right most" number
+            if new_index <= index_first {
+                index_first = new_index; 
+                first_digit = (*number as u32).clone();
+            }else if new_index >= index_last {
+                index_last = new_index;
+                last_digit = (*number as u32).clone();
+            };
         };
     }
 
