@@ -16,13 +16,13 @@ The sum of all the two digit numbers in the file.
 
 ### Solution part 1 
 The first part was very simple:
-    1. Iterate through each char
-    2. Check if the char is numeric, else continue
-    3. If it is numeric and the first number is not been set 
-        - Set the first number
-        - Always set the last number
-    4. Use this formula for calculating the number:
-        - `first_digit*10 + last_digit`
+1. Iterate through each char
+2. Check if the char is numeric, else continue
+3. If it is numeric and the first number is not been set 
+    - Set the first number
+    - Always set the last number
+4. Use this formula for calculating the two digit number:
+    - `first_digit*10 + last_digit`
 
 ### Solution part 2 (bad)
 The second part had included numbers as plain text. I decided to use a hashmap to turn "one" into 1, etc.
