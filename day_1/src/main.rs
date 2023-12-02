@@ -28,7 +28,7 @@ fn number_from_string(input: &str) -> u32{
     first_digit*10 + last_digit
 }
 
-fn number_from_string_with_number_strings(input: &str) ->u32{
+fn number_from_string_with_number_strings(input: &str, value_map: &HashMap<&str, i32>) ->u32{
     // Save the result in a variable 
     let mut first_digit:u32 = 0;
     let mut index_first: usize = 0;
@@ -51,6 +51,20 @@ fn number_from_string_with_number_strings(input: &str) ->u32{
     }
 
     // Check for any numbers 
+    for (number_string, number) in value_map.into_iter(){
+        match input.find(number_string){
+            Some(new_index) => {
+                if new_index < index_first {
+                    index_first = new_index; 
+                    first_digit = (*number as u32).clone();
+                }else if new_index > index_last {
+                    index_last = new_index;
+                    last_digit = (*number as u32).clone();
+                }
+            }
+            None => {}
+        };
+    }
 
    
 
@@ -66,7 +80,7 @@ fn main() -> std::io::Result<()>{
     println!("--- Day 1 ---");
 
     // Create hashmap for part 2
-    let mut value_map = HashMap::new();
+    let mut value_map: HashMap<&str, i32> = HashMap::new();
     value_map.insert("one", 1);
     value_map.insert("two", 2);
     value_map.insert("three", 3);
@@ -78,7 +92,8 @@ fn main() -> std::io::Result<()>{
     value_map.insert("nine", 9);
 
     // We store the total sum of the file to a variable 
-    let mut total_sum_from_file: u32 = 0;
+    let mut sum_part_1: u32 = 0;
+    let mut sum_part_2: u32 = 0;
 
     // Save the content of a file to a string; 
     let mut content = String::new();
@@ -97,12 +112,17 @@ fn main() -> std::io::Result<()>{
     // For each line we need to fine the number
     for line in content.lines(){
         // Add the number from the file to the total sum
-        total_sum_from_file += number_from_string(line.trim());
+        sum_part_1 += number_from_string(line.trim());
+        sum_part_2 += number_from_string_with_number_strings(line.trim(), &value_map);
 
     }
 
     // Print the result for part 1 
-    println!("PART 1: {}", total_sum_from_file);
+    println!("PART 1: {}", sum_part_1);
+
+    println!("PART 2: {}", sum_part_2);
+
+
     
     // Return OK
     Ok(())
