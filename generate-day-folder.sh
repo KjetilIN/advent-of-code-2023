@@ -23,7 +23,6 @@ echo -e "## Output Description\n\n" >> notes.md
 echo -e "## Approach/Algorithm\n\n" >> notes.md
 echo -e "## Learnings\n\n" >> notes.md
 echo -e "## Code Snippets\n\n" >> notes.md
-echo -e "## Challenges Faced\n\n" >> notes.md
 
 # Print a message
 echo "New project for Day $day_number created in $day_folder. notes.md file created."
