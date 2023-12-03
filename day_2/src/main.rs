@@ -8,8 +8,66 @@ const MAX_POSSIBLE_GREENS: u32 = 13;
 const MAX_POSSIBLE_BLUES: u32 = 14;
 
 
+/**
+ * Helper function that gets the amount of the given color
+ *  - takes the vector of game items as a string and the index where the color was detected
+ *  - returns the amount of the color or stops the program
+ */
+fn get_amount(vector: &Vec<&str>, index: usize) -> u32{
+    match vector.get(index-1){
+        Some(amount) => amount.parse().unwrap_or_else(|err|{
+            eprintln!("ERROR: error during the parsing the amount {amount}: {err}");
+            exit(1);
+        }),
+        None =>{
+            eprintln!("ERROR: during formatting amount",);
+            exit(1);
+
+        }
+    }
+}
+
+/**
+ * Helper function that gets the game id
+ * - Uses the vector of game items and the index of where "Game" was found
+ * - Will return the game id if correctly formatted
+ * - Otherwise stops the program
+ */
+fn get_game_id(vector: &Vec<&str>, index: usize) -> u32{
+    match vector.get(index+1){
+        Some(id) =>{
+
+            // ID = "1:", so we remove the colum by taking away the last char
+            let number = &id[0..id.len()-1];
+
+            number.parse().unwrap_or_else(|err|{
+                eprintln!("ERROR: error during the parsing game id {number}: {err}");
+                exit(1);
+            })
+        },
+        None => {
+            eprintln!("ERROR: getting the Game ID");
+            exit(1);
+        }
+
+    }
+}
+
+
+
+
+/**
+ * The main function for part 1 
+ * - Takes a input str, which is a game
+ * - Checks if the game is possible
+ * - Return the game id if it is possible 
+ * - Return 0 if the game was not possible 
+ * 
+ * NB! Will exit the program if the game is not formatted correctly  
+ */
 pub fn check_game_possible(input: &str) -> u32{
     
+    // Initialize variables  
     let mut game_id: u32 = 0; 
     let mut green: u32 = 0;
     let mut red: u32 = 0;
@@ -28,23 +86,8 @@ pub fn check_game_possible(input: &str) -> u32{
     for (index, item) in word_list.iter().enumerate(){
         match item{
             &"Game" => {
-                game_id =  match word_list.get(index+1){
-                    Some(id) =>{
-
-                        // ID = "1:", so we remove the colum by taking away the last char
-                        let number = &id[0..id.len()-1];
-
-                        number.parse().unwrap_or_else(|err|{
-                            eprintln!("ERROR: error during the parsing game id {number}: {err}");
-                            exit(1);
-                        })
-                    },
-                    None => {
-                        eprintln!("ERROR: not correctly formatted game: {item}");
-                        exit(1);
-                    }
-
-                };
+                // Found the game string and will set the id
+                game_id =  get_game_id(&word_list, index);
             }
             &";" =>{
                 // A semicolon is found, so we reset or values 
@@ -53,18 +96,10 @@ pub fn check_game_possible(input: &str) -> u32{
                 blue = 0;
             },
             &"green" => {
-                let amount: u32 =  match word_list.get(index-1){
-                    Some(amount) => amount.parse().unwrap_or_else(|err|{
-                        eprintln!("ERROR: error during the parsing the amount {amount}: {err}");
-                        exit(1);
-                    }),
-                    None =>{
-                        eprintln!("ERROR: not correctly formatted, the amount is not integer: {item}");
-                        exit(1);
+                // Get the amount for the color
+                let amount: u32 =  get_amount(&word_list, index);
 
-                    }
-                };
-
+                // Add it to the total amount
                 green += amount;
 
                 // Check if game is possible 
@@ -74,18 +109,10 @@ pub fn check_game_possible(input: &str) -> u32{
 
             },
             &"blue" => {
-                let amount: u32 =  match word_list.get(index-1){
-                    Some(amount) => amount.parse().unwrap_or_else(|err|{
-                        eprintln!("ERROR: error during the parsing the amount {amount}: {err}");
-                        exit(1);
-                    }),
-                    None =>{
-                        eprintln!("ERROR: not correctly formatted, the amount is not integer: {item}");
-                        exit(1);
+                // Get the amount of the color blue
+                let amount: u32 =  get_amount(&word_list, index);
 
-                    }
-                };
-
+                // Add it to the total
                 blue += amount;
 
                 // Check if game is possible 
@@ -95,18 +122,10 @@ pub fn check_game_possible(input: &str) -> u32{
 
             },
             &"red" => {
-                let amount: u32 =  match word_list.get(index-1){
-                    Some(amount) => amount.parse().unwrap_or_else(|err|{
-                        eprintln!("ERROR: error during the parsing the amount {amount}: {err}");
-                        exit(1);
-                    }),
-                    None =>{
-                        eprintln!("ERROR: not correctly formatted, the amount is not integer: {item}");
-                        exit(1);
+                // Get the amount of reds
+                let amount: u32 =  get_amount(&word_list, index);
 
-                    }
-                };
-
+                // Add it to the total
                 red += amount;
 
                 // Check if game is possible 
