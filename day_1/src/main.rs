@@ -78,7 +78,7 @@ pub fn number_from_string_with_number_strings(input: &str, value_map: &HashMap<&
 
 fn main() -> std::io::Result<()>{
     // Print context line
-    println!("--- Day 1 ---");
+    println!("--- Day 1: Trebuchet?! ---");
 
     // Create hashmap for part 2
     let mut value_map: HashMap<&str, i32> = HashMap::new();

@@ -206,7 +206,7 @@ pub fn minimum_cubes_powered(input: &str) -> u32{
 
 
 fn main() -> io::Result<()>{
-    println!("--- Day 2 ---");
+    println!("--- Day 2: Cube Conundrum ---");
 
     let mut content = String::new();
 
