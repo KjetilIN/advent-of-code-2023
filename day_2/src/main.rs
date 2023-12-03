@@ -1,101 +1,128 @@
 use std::{path::Path, fs::File, io::{self, BufReader, Read}, process::exit};
-use regex::Regex;
+
 
 
 // Constant that describe how many of each there is a max number of
 const MAX_POSSIBLE_REDS: u32 = 12;
-const MAX_POSSIBLE_GREENS: u32 = 12;
-const MAX_POSSIBLE_BLUES: u32 = 12;
+const MAX_POSSIBLE_GREENS: u32 = 13;
+const MAX_POSSIBLE_BLUES: u32 = 14;
 
 
-fn get_game_id(input: &str) -> u32{
-    let game_index = match input.find("Game"){
-        Some(index)=>index,
-        None => {
-            eprint!("ERROR: Not a valid game error");
-            return 0;
-        }
-    };
-
+pub fn check_game_possible(input: &str) -> u32{
     
-    let game_id: String = input.chars()
-                                   .skip(game_index+4)
-                                   .take_while(|current| current != &':')
-                                   .collect();
+    let mut game_id: u32 = 0; 
+    let mut green: u32 = 0;
+    let mut red: u32 = 0;
+    let mut blue: u32 = 0;
 
+    // We format the game by 
+    // - removing the commas 
+    // - make the semicolons be on their own with spaces
+    let formatted_game = input.trim()
+                                 .replace(",", "")
+                                 .replace(";", " ;");
 
-    match game_id.trim().parse(){
-        Ok(res) => res ,
-        _ => {
-            eprintln!("ERROR: during parsing of game number: {}", game_id.trim());
-            exit(1);
-        }
-    }
+    // Turn the line into a vector 
+    let word_list: Vec<_> = formatted_game.split(" ").collect();
 
+    for (index, item) in word_list.iter().enumerate(){
+        match item{
+            &"Game" => {
+                game_id =  match word_list.get(index+1){
+                    Some(id) =>{
 
-}
+                        // ID = "1:", so we remove the colum by taking away the last char
+                        let number = &id[0..id.len()-1];
 
-// Checks if the color has gone over what is possible for he game
-// - Returns true if the game is not possible 
-// - Returns false if the amount is lower than what the max is or color not found
-fn is_below_max_for_color(game: &str, color: &str, max:u32) -> bool{
-    match game.find(color){
-        Some(index) => {
-            let chars_to_iter = &game[&index+5..index];
-            Regex::new(r"[A-Za-z]").unwrap().replace_all(chars_to_iter, "_");
-            
-            let amount = chars_to_iter.trim().parse::<u32>().unwrap_or_else(|err| {
-                eprintln!("ERROR: during parsing of int {chars_to_iter} : {err}");
-                exit(1);
-            });
+                        number.parse().unwrap_or_else(|err|{
+                            eprintln!("ERROR: error during the parsing game id {number}: {err}");
+                            exit(1);
+                        })
+                    },
+                    None => {
+                        eprintln!("ERROR: not correctly formatted game: {item}");
+                        exit(1);
+                    }
 
-            if amount > max{
-                false
-            }else{
-                true
+                };
             }
+            &";" =>{
+                // A semicolon is found, so we reset or values 
+                green = 0;
+                red = 0;
+                blue = 0;
+            },
+            &"green" => {
+                let amount: u32 =  match word_list.get(index-1){
+                    Some(amount) => amount.parse().unwrap_or_else(|err|{
+                        eprintln!("ERROR: error during the parsing the amount {amount}: {err}");
+                        exit(1);
+                    }),
+                    None =>{
+                        eprintln!("ERROR: not correctly formatted, the amount is not integer: {item}");
+                        exit(1);
 
-            
-        },
-        _ => {true}
+                    }
+                };
+
+                green += amount;
+
+                // Check if game is possible 
+                if green > MAX_POSSIBLE_GREENS{
+                    return 0 
+                }
+
+            },
+            &"blue" => {
+                let amount: u32 =  match word_list.get(index-1){
+                    Some(amount) => amount.parse().unwrap_or_else(|err|{
+                        eprintln!("ERROR: error during the parsing the amount {amount}: {err}");
+                        exit(1);
+                    }),
+                    None =>{
+                        eprintln!("ERROR: not correctly formatted, the amount is not integer: {item}");
+                        exit(1);
+
+                    }
+                };
+
+                blue += amount;
+
+                // Check if game is possible 
+                if blue > MAX_POSSIBLE_BLUES{
+                    return 0 
+                }
+
+            },
+            &"red" => {
+                let amount: u32 =  match word_list.get(index-1){
+                    Some(amount) => amount.parse().unwrap_or_else(|err|{
+                        eprintln!("ERROR: error during the parsing the amount {amount}: {err}");
+                        exit(1);
+                    }),
+                    None =>{
+                        eprintln!("ERROR: not correctly formatted, the amount is not integer: {item}");
+                        exit(1);
+
+                    }
+                };
+
+                red += amount;
+
+                // Check if game is possible 
+                if red > MAX_POSSIBLE_REDS{
+                    return 0 
+                }
+
+            }
+            _ => {}
+        }
     }
-}
 
 
-
-fn check_game_possible(input: &str) -> u32{
-    // Get the game ID of the strings 
-    let game_id: u32 = get_game_id(input);
-
-    // Parse the rest of the games
-    let col_index =  match input.find(":"){
-        Some(index) => index,
-        _ => {
-            eprintln!("ERROR: during parsing of line, did not find the : char");
-            exit(1);
-        }
-    };
-
-    let games_played: Vec<_> = (&input[col_index..input.len()]).split(",").collect();
-
-    for game in games_played.iter(){
-        if !is_below_max_for_color(game, "red", MAX_POSSIBLE_REDS){
-            return 0;
-        }
-
-        if !is_below_max_for_color(game, "green", MAX_POSSIBLE_GREENS){
-            return 0;
-        }
-
-        if !is_below_max_for_color(game, "blue", MAX_POSSIBLE_BLUES){
-            return 0;
-        }
-    }
 
     return game_id;
 }
-
-
 
 
 fn main() -> io::Result<()>{
