@@ -24,6 +24,10 @@ Welcome to my Advent of Code 2023 repository! In this project, I am working on s
 | --- | ---------------------------------- | ------------------------------- |
 | 1   | Day 1: Trebuchet?!                 | [Read notes here](https://github.com/KjetilIN/advent-of-code-2023/blob/main/day_1/notes.md) |
 | 2   | Day 2: Cube Conundrum              | [Read notes here](https://github.com/KjetilIN/advent-of-code-2023/blob/main/day_2/notes.md)           |
+| 3   | Day 3: Gear Ratios             | [Read notes here](https://github.com/KjetilIN/advent-of-code-2023/blob/main/day_3/notes.md)           |
+
+
+
 
 
 ## Getting Started

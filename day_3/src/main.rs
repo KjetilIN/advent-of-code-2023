@@ -1,3 +1,3 @@
 fn main() {
-    println!("Hello, world!");
+    println!("--- Day 3: Gear Ratios ---");
 }
