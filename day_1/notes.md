@@ -2,6 +2,8 @@
 
 Day one was the goal to try to get a two digit number for each line, where each line is fuzzed 
 
+Link to complete description: https://adventofcode.com/2023/day/1
+
 ## Input Description
 
 A list of fuzzed input in `input.txt`
