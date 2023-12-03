@@ -20,20 +20,29 @@ Welcome to my Advent of Code 2023 repository! In this project, I am working on s
 
 ## Table of Contents
 
-| Day | Title                              | Topic                           |
+| Day | Title                              | Link to notes 🗒️                |
 | --- | ---------------------------------- | ------------------------------- |
-| 1   | [Day 1: Title of Day 1]            | [Topic of Day 1]                |
-| 2   | [Day 2: Title of Day 2]            | [Topic of Day 2]                |
-| 3   | [Day 3: Title of Day 3]            | [Topic of Day 3]                |
-| ... | ...                                | ...                             |
-| N   | [Day N: Title of Day N]            | [Topic of Day N]                |
+| 1   | Day 1: Trebuchet?!                 | [Read notes here](https://github.com/KjetilIN/advent-of-code-2023/blob/main/day_1/notes.md) |
+| 2   | Day 2: Cube Conundrum              | [Read notes here](https://github.com/KjetilIN/advent-of-code-2023/blob/main/day_2/notes.md)           |
+
 
 ## Getting Started
 
 1. Clone this repository:
-
-   ```bash
-   git clone https://github.com/KjetilIN/advent-of-code-2023.git
-   cd advent-of-code-2023-rust
-   ```
+```bash
+git clone https://github.com/KjetilIN/advent-of-code-2023.git
+cd advent-of-code-2023-rust
+```
 2. CD into the day that you want to run. (Note that each folder is its own cargo project)
+```bash
+# In case of testing day 1
+cd day_1
+```
+3. Run the project with cargo:
+```bash
+cargo run
+```
+4. (Extra) Run tests with:
+```bash
+cargo test
+```
