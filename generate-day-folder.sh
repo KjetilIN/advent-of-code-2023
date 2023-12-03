@@ -17,7 +17,8 @@ cargo new $day_folder
 cd $day_folder
 
 # Create a notes.md file with Description, Input, Output, Approach, Learnings, Code Snippets, and Challenges Faced headings
-echo -e "# Day $day_number - Description\n" > notes.md
+echo -e "# Day $day_number - Description\n\n" > notes.md
+echo -e "Link to complete description: https://adventofcode.com/2023/day/$day_number" > notes.md
 echo -e "## Input Description\n\n" >> notes.md
 echo -e "## Output Description\n\n" >> notes.md
 echo -e "## Approach/Algorithm\n\n" >> notes.md
