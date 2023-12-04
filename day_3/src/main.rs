@@ -2,14 +2,18 @@ use std::{fs::File, io::BufReader};
 use std::io::Read;
 
 struct Map<'a>{
-    rows: &'a Vec<String>
+    rows: &'a Vec<String>,
+    col_length: u32,
+    row_length: u32
 }
 
-impl Map<'_>{
+impl<'a> Map<'a>{
 
-    fn new(given_rows: &'a Vec<String>) -> Self{
-        Self { rows: given_rows }
+    fn new(rows: &'a Vec<String>) -> Self{
+        let row_length = rows.len() as u32;
+        let col_length = rows.get(0).unwrap().len().clone() as u32;
 
+        Self { rows, col_length, row_length }
     }
     
 }
