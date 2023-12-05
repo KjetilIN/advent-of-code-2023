@@ -6,10 +6,10 @@ use std::io::Read;
     - Has the vectors of all the rows
     - Has the length of columns and rows
  */
-struct EngineSchema<'a>{
-    rows: &'a Vec<String>,
-    col_length: u32,
-    row_length: u32
+pub struct EngineSchema<'a>{
+    pub rows: &'a Vec<String>,
+    pub col_length: u32,
+    pub row_length: u32
 }
 
 impl<'a> EngineSchema<'a>{  
@@ -20,7 +20,7 @@ impl<'a> EngineSchema<'a>{
         - The life time of the struct is the same as the Vector given
     */
 
-    fn new(rows: &'a Vec<String>) -> Self{
+    pub fn new(rows: &'a Vec<String>) -> Self{
         let row_length = rows.len().clone() as u32;
         let col_length = rows.get(0).unwrap().len().clone() as u32;
 
@@ -29,12 +29,12 @@ impl<'a> EngineSchema<'a>{
 
 
     /**
-     * Method that gets the char from the map vector.
-     * - Gets the indexes 
-     * 
-     * Returns an option with the char or none if illegal indexes where given 
+      Method that gets the char from the map vector.
+      - Gets the indexes 
+      
+      Returns an option with the char or none if illegal indexes where given 
     */
-    fn get_char_from_vector(&self, row_index:usize, char_index:usize) -> Option<char>{
+    pub fn get_char_from_vector(&self, row_index:usize, char_index:usize) -> Option<char>{
 
         // Validating input or panics 
         if row_index > self.row_length.try_into().unwrap() {
@@ -49,7 +49,9 @@ impl<'a> EngineSchema<'a>{
         let binding = self.rows.get(row_index);
         let row = match &binding{
             Some(row) => row,
-            None => return None,
+            None => {
+                eprintln!("ERROR: illegal was not able to get row: {row_index}");
+                return None},
         };
         let row_chars: Vec<_> = row.chars().collect();
 
@@ -59,13 +61,13 @@ impl<'a> EngineSchema<'a>{
 
 
     /**
-     * Method that checks if a given index is a part number / aka a digit
-     * - Takes the row index and char index of the char we want to check
-     * - Checks that the given indexes could be an item on the map
-     * - (Uses get_char_from_vector method for validating)
-     * 
-     * Returns true if the item is a number
-     */
+      Method that checks if a given index is a part number / aka a digit
+      - Takes the row index and char index of the char we want to check
+      - Checks that the given indexes could be an item on the map
+      - (Uses get_char_from_vector method for validating)
+      
+      Returns true if the item is a number
+    */
     pub fn is_part_number(&self, row_index:usize, char_index:usize) -> bool{
         match self.get_char_from_vector(row_index, char_index){
             Some(item) => item.is_numeric(),
@@ -74,9 +76,10 @@ impl<'a> EngineSchema<'a>{
     }   
 
     /**
-     * Function that takes finds the sum part for a single part
-     * Takes the row index and char index of the given part 
-     * Returns the sum or 0 if no parts for that sum is available 
+      Function that takes finds the sum part for a single part
+      - Takes the row index and char index of the given part 
+      
+      Returns the sum or 0 if no parts for that sum is available 
     */
     pub fn get_part_sum(&self, row_index:usize, char_index:usize) -> u32{
         let mut sum = 0;
@@ -85,20 +88,13 @@ impl<'a> EngineSchema<'a>{
         let top_row_index = row_index - 1;
         let bottom_row_index = row_index + 1;
         let left_char_index = char_index - 1;
-        let right_char_index = char_index - 1;
+        let right_char_index = char_index + 1;
 
         // Check all sides for the number
         let number_top = self.is_part_number(top_row_index, char_index);
-        let number_top_left = self.is_part_number(top_row_index, left_char_index);
-        let number_top_right = self.is_part_number(top_row_index, right_char_index);
         let number_left = self.is_part_number(row_index, left_char_index);
         let number_right = self.is_part_number(row_index, right_char_index);
         let number_bottom = self.is_part_number(bottom_row_index, char_index);
-        let number_bottom_right = self.is_part_number(bottom_row_index, right_char_index);
-        let number_bottom_left = self.is_part_number(bottom_row_index, left_char_index);
-
-        
-
 
         // Check the top
         if number_top{
@@ -106,43 +102,56 @@ impl<'a> EngineSchema<'a>{
             sum += top_number;
 
         }else{
+            let number_top_left = self.is_part_number(top_row_index, left_char_index);
+            let number_top_right = self.is_part_number(top_row_index, right_char_index);
             // There is no number on the top, 
             // and if there are numbers to the left and right, we know that they are not the same numbers 
             // There is a space between the numbers
             if number_top_left {
-                sum += get_number(self.rows.get(top_row_index).unwrap(), left_char_index);
+                let top_left_number = get_number(self.rows.get(top_row_index).unwrap(), left_char_index);
+                sum += top_left_number;
             }
 
             if number_top_right {
-                sum += get_number(self.rows.get(top_row_index).unwrap(), right_char_index);
+                let top_right_number= get_number(self.rows.get(top_row_index).unwrap(), right_char_index);
+                sum += top_right_number;
             }
         }
 
         // Check both sides 
         if number_left{
-            sum += get_number(self.rows.get(row_index).unwrap(), left_char_index);
+            let left_number = get_number(self.rows.get(row_index).unwrap(), left_char_index);
+            sum += left_number;
         }
 
         if number_right{
-            sum += get_number(self.rows.get(row_index).unwrap(), right_char_index);
+            let right_number = get_number(self.rows.get(row_index).unwrap(), right_char_index);
+            sum += right_number;
         }
 
 
-        // Check the top
+        // Check the bottom
         if number_bottom{
             let bottom_number = get_number(self.rows.get(bottom_row_index).unwrap(), char_index);
             sum += bottom_number;
 
         }else{
-            // There is no number on the top, 
-            // and if there are numbers to the left and right, we know that they are not the same numbers 
+            // There is no number on the bottom, 
+            // and if there are numbers to the left and right diagonal, we know that they are not the same numbers 
             // There is a space between the numbers
+
+            
+            let number_bottom_right = self.is_part_number(bottom_row_index, right_char_index);
+            let number_bottom_left = self.is_part_number(bottom_row_index, left_char_index);
+            
             if number_bottom_left {
-                sum += get_number(self.rows.get(bottom_row_index).unwrap(), left_char_index);
+                let bottom_left = get_number(self.rows.get(bottom_row_index).unwrap(), left_char_index);
+                sum += bottom_left;
             }
 
             if number_bottom_right {
-                sum += get_number(self.rows.get(bottom_row_index).unwrap(), right_char_index);
+                let bottom_right = get_number(self.rows.get(bottom_row_index).unwrap(), right_char_index);
+                sum += bottom_right;
             }
         }
 
@@ -153,16 +162,17 @@ impl<'a> EngineSchema<'a>{
 
 
     /**
-     * Method that gets the total part sum for all of the parts in the constructed map
-     * Returns the result of all the parts 
+      Method that gets the total part sum for all of the parts in the constructed map
+      - Uses the self keyword 
+      Returns the result of all the parts 
      */
-    fn get_total_part_sum(&self) -> u32{
+    pub fn get_total_part_sum(&self) -> u32{
         let mut result: u32 = 0;
 
         for (row_index, row) in self.rows.iter().enumerate(){
             for (char_index, ch) in row.chars().enumerate(){
                 // If it is a special char, we have found a special char
-                if !ch.is_alphanumeric() || ch != '.'{
+                if !ch.is_numeric() && ch != '.'{
                     result += Self::get_part_sum(self, row_index, char_index);
                 }
             }
@@ -205,6 +215,10 @@ pub fn get_number(row: &String, number_index:usize) -> u32{
 
     while char_vector[right_index].is_numeric() && char_vector.len() > right_index  {
         right_number.push(char_vector[right_index]);
+
+        if right_index == char_vector.len() - 1{
+            break;
+        }
         right_index += 1;
     };
 
@@ -212,8 +226,12 @@ pub fn get_number(row: &String, number_index:usize) -> u32{
     let mut left_index = number_index - 1;
     let mut left_number = String::new();
     
-    while char_vector[left_index].is_numeric() && left_index > 0 {
+    while char_vector[left_index].is_numeric() {
         left_number.push(char_vector[left_index]);
+        
+        if left_index == 0{
+            break;
+        }
         left_index-=1;
     };
 
@@ -258,10 +276,10 @@ fn main() -> std::io::Result<()> {
         parts_vector.push(line.to_string().clone());
     }
 
-    let parts_map = EngineSchema::new(&parts_vector);
+    let engine = EngineSchema::new(&parts_vector);
    
 
-    println!("Parts Map size: {}x{}", parts_map.col_length, parts_map.row_length);
+    println!("Total part sum: {}", engine.get_total_part_sum());
 
 
     Ok(())
