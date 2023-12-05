@@ -163,7 +163,9 @@ mod tests {
         // We are testing the part sum for the '*' on the second row
         // It has one number top left and one below
         // Sum should be 502
-        assert_eq!(engine.get_part_sum(1, 3), 502);
+        assert_eq!(engine.get_part_sum(1, 3), 502)
+        
+        ;
         
     }
 
@@ -217,7 +219,7 @@ mod tests {
 
         let engine = EngineSchema::new(&parts_vector);
 
-        // We are testing the part sum for the '*' on the fourth row
+        // We are testing the part sum for the '*' on the ninth row
         // It has one number top right and one below
         // Sum should be 1352
         
@@ -237,7 +239,7 @@ mod tests {
 
         let engine = EngineSchema::new(&parts_vector);
 
-        // We are testing the part sum for the '+' on the fourth row
+        // We are testing the part sum for the '+' on the sixth row
         // It has one number bottom left
         // Sum should be 592
         
@@ -258,6 +260,60 @@ mod tests {
 
         // We are testing the part total part sum of the map, which should be 4361   
         assert_eq!(engine.get_total_part_sum(), 4361);
+    }
+
+
+    #[test]
+    fn test_get_gear_ration_invalid() {
+        let schema = "467..114..\n...*......\n..35..633.\n......#...\n617*......\n.....+.58.\n..592.....\n......755.\n...$.*....\n.664.598..";
+
+        let mut parts_vector = Vec::<String>::new();
+        for line in schema.lines(){
+            parts_vector.push(line.to_string().clone());
+        }
+
+
+        let engine = EngineSchema::new(&parts_vector);
+
+        // We are testing the gear for the '*' on the fourth row
+        // It has one number top meaning it should be invalid
+        assert_eq!(engine.get_gear_ratio(3, 6), 0);
+    }
+
+    #[test]
+    fn test_get_gear_ration_valid() {
+        let schema = "467..114..\n...*......\n..35..633.\n......#...\n617*......\n.....+.58.\n..592.....\n......755.\n...$.*....\n.664.598..";
+
+        let mut parts_vector = Vec::<String>::new();
+        for line in schema.lines(){
+            parts_vector.push(line.to_string().clone());
+        }
+
+
+        let engine = EngineSchema::new(&parts_vector);
+
+        // We are testing the gear ratio for the '*' on the ninth row
+        // It has one number top right and one below 
+        // Gear ratio should be (755 * 598 = 451490)
+        
+        assert_eq!(engine.get_gear_ratio(8, 5), 451490);
+    }
+
+
+    #[test]
+    fn test_get_total_gear_ratio() {
+        let schema = "467..114..\n...*......\n..35..633.\n......#...\n617*......\n.....+.58.\n..592.....\n......755.\n...$.*....\n.664.598..";
+
+        let mut parts_vector = Vec::<String>::new();
+        for line in schema.lines(){
+            parts_vector.push(line.to_string().clone());
+        }
+
+
+        let engine = EngineSchema::new(&parts_vector);
+
+        // We are testing the part total part sum of the map, which should be 467835   
+        assert_eq!(engine.get_total_gear_ratio(), 467835);
     }
 
 
