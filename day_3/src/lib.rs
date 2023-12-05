@@ -163,9 +163,7 @@ mod tests {
         // We are testing the part sum for the '*' on the second row
         // It has one number top left and one below
         // Sum should be 502
-        assert_eq!(engine.get_part_sum(1, 3), 502)
-        
-        ;
+        assert_eq!(engine.get_part_sum(1, 3), 502);
         
     }
 

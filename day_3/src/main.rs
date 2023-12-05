@@ -338,20 +338,20 @@ pub fn get_number(row: &String, number_index:usize) -> u32{
 
     //We add each numeric char that is to the left
     let mut right_index = number_index + 1;
-    let mut right_number = String::new();
+    let mut right_number = Vec::new();
 
     while char_vector[right_index].is_numeric() && char_vector.len() > right_index  {
         right_number.push(char_vector[right_index]);
-
-        if right_index == char_vector.len() - 1{
+        right_index += 1;
+        if right_index == char_vector.len(){
             break;
         }
-        right_index += 1;
+        
     };
 
     // Then we get all the chars from the front 
     let mut left_index = number_index - 1;
-    let mut left_number = String::new();
+    let mut left_number = Vec::new();
     
     while char_vector[left_index].is_numeric() {
         left_number.push(char_vector[left_index]);
@@ -359,18 +359,19 @@ pub fn get_number(row: &String, number_index:usize) -> u32{
         if left_index == 0{
             break;
         }
-        left_index-=1;
+        
+        left_index -= 1;
+
     };
 
 
     // Format the result as a string 
-    let result_string = if right_number.trim().is_empty() {
-        format!("{}{}",left_number.chars().rev().collect::<String>(), central_char)
-    } else if left_number.trim().is_empty() {
-        format!("{}{}",central_char, right_number)
-    } else {
-        format!("{}{}{}", left_number.chars().rev().collect::<String>(),central_char,right_number)
-    };
+    let result_string = format!(
+        "{}{}{}",
+        left_number.iter().rev().collect::<String>(),
+        central_char,
+        right_number.iter().collect::<String>()
+    );
 
     match (result_string).parse(){
         Ok(number) => number,
