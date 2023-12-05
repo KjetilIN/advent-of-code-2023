@@ -182,6 +182,133 @@ impl<'a> EngineSchema<'a>{
     }
 
 
+    /**
+      Method that gets the total part sum for all of the gear ratios
+      - Uses the self keyword 
+      Returns the result of all the parts 
+     */
+    pub fn get_total_gear_ratio(&self) -> u32{
+        let mut result: u32 = 0;
+
+        for (row_index, row) in self.rows.iter().enumerate(){
+            for (char_index, ch) in row.chars().enumerate(){
+                // If it is a special char, we have found a special char
+                if ch == '*'{
+                    result += Self::get_gear_ratio(self, row_index, char_index);
+                }
+            }
+        }
+
+        result
+    }
+
+    /**
+        Method that returns the gear ratio of a single gear
+        A valid gear has:
+            1. A central part char that is *
+            2. Exactly two numbers close to it
+        
+        Gear ratio is the two numbers multiplied
+        To use this function we give the row and char index of the '*' char
+
+        Returns thr gear ratio of a valid gear or 0
+    */
+    pub fn get_gear_ratio(&self, row_index:usize, char_index:usize) -> u32{
+
+        let mut gear_ratio:u32 = 1;
+        let mut numbers_found = 0;
+
+        // Declare variables for the indexes
+        let top_row_index = row_index - 1;
+        let bottom_row_index = row_index + 1;
+        let left_char_index = char_index - 1;
+        let right_char_index = char_index + 1;
+
+        // Check all sides for the number
+        let number_top = self.is_part_number(top_row_index, char_index);
+        let number_left = self.is_part_number(row_index, left_char_index);
+        let number_right = self.is_part_number(row_index, right_char_index);
+        let number_bottom = self.is_part_number(bottom_row_index, char_index);
+
+        // Check the top
+        if number_top{
+            let top_number = get_number(self.rows.get(top_row_index).unwrap(), char_index);
+            gear_ratio *= top_number;
+            numbers_found +=1;
+
+        }else{
+            let number_top_left = self.is_part_number(top_row_index, left_char_index);
+            let number_top_right = self.is_part_number(top_row_index, right_char_index);
+            // There is no number on the top, 
+            // and if there are numbers to the left and right, we know that they are not the same numbers 
+            // There is a space between the numbers
+            if number_top_left {
+                let top_left_number = get_number(self.rows.get(top_row_index).unwrap(), left_char_index);
+                gear_ratio *= top_left_number;
+                numbers_found +=1;
+            }
+
+            if number_top_right {
+                let top_right_number= get_number(self.rows.get(top_row_index).unwrap(), right_char_index);
+                gear_ratio *= top_right_number;
+                numbers_found +=1;
+            }
+        }
+
+        // Check both sides 
+        if number_left{
+            let left_number = get_number(self.rows.get(row_index).unwrap(), left_char_index);
+            gear_ratio *= left_number;
+            numbers_found +=1;
+
+        }
+
+        if number_right{
+            let right_number = get_number(self.rows.get(row_index).unwrap(), right_char_index);
+            gear_ratio *= right_number;
+            numbers_found += 1;
+        }
+
+
+        // Check the bottom
+        if number_bottom{
+            let bottom= get_number(self.rows.get(bottom_row_index).unwrap(), char_index);
+            gear_ratio *= bottom;
+            numbers_found += 1;
+
+        }else{
+
+            // There is no number on the bottom, 
+            // and if there are numbers to the left and right diagonal, we know that they are not the same numbers 
+            // There is a space between the numbers
+            
+            let number_bottom_right = self.is_part_number(bottom_row_index, right_char_index);
+            let number_bottom_left = self.is_part_number(bottom_row_index, left_char_index);
+            
+            if number_bottom_left {
+                let bottom_left = get_number(self.rows.get(bottom_row_index).unwrap(), left_char_index);
+                gear_ratio *= bottom_left;
+                numbers_found +=1;
+            }
+
+            if number_bottom_right{
+                let bottom_right = get_number(self.rows.get(bottom_row_index).unwrap(), right_char_index);
+                gear_ratio *= bottom_right;
+                numbers_found +=1;
+                
+            }
+        }
+
+
+        // Return if we have two numbers found else return 0 
+        if numbers_found != 2{
+            return 0;
+        }else{
+            return gear_ratio;
+        }       
+    }
+
+
 
 
 
@@ -280,6 +407,7 @@ fn main() -> std::io::Result<()> {
    
 
     println!("Total part sum: {}", engine.get_total_part_sum());
+    println!("Total gear ratio sum: {}", engine.get_total_gear_ratio());
 
 
     Ok(())
