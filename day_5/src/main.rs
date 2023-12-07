@@ -1,7 +1,7 @@
 use std::{
     fs::File,
     io::{BufReader, Read},
-    path::Path, ops::Range, process::exit,
+    path::Path, ops::Range, process::exit, collections::HashSet,
 };
 pub struct Almanac {
     pub seeds: Vec<u64>,
@@ -181,6 +181,66 @@ impl Almanac {
         
     }
 
+    // TODO: FIX THIS FOR PART 2
+    pub fn find_min_location_from_range(&self)->u64{
+        // Check if we have seeds in pairs
+        if self.seeds.len() % 2 != 0 {
+            eprintln!("Error: not an even number of seeds given");
+            std::process::exit(1);
+        }
+
+        // Create the vector of ranges that needs to be checked
+        let mut ranges: Vec<Range<u64>> = Vec::new();
+
+        let mut counter = 0;
+        while counter < self.seeds.len() {
+            let start: u64 = self.seeds[counter];
+            let length: u64 = self.seeds[counter + 1];
+
+            ranges.push(Range {
+                start,
+                end: start + length,
+            });
+
+            counter += 2;
+        }
+
+        
+        let mut unique_locations: HashSet<u64> = HashSet::new();
+
+        for almanac_item in &self.seed_to_soil {
+            for seed_range in &ranges {
+                if almanac_item.source_range.end <= seed_range.start || almanac_item.source_range.start >= seed_range.end {
+                    continue; // No intersection between the seed range and the source range
+                }
+
+                // Calculate the intersection between the seed range and the source range
+                let intersection = seed_range.start.max(almanac_item.source_range.start)..seed_range.end.min(almanac_item.source_range.end);
+
+                // Calculate the destination for the intersected range
+                for seed in intersection {
+                    let new_potential_source = almanac_item.get_dest_from_source(seed);
+                    unique_locations.insert(new_potential_source);
+                }
+            }
+        }
+
+        let mut smallest_location = u64::MAX;
+
+        for &soil in &unique_locations {
+            let fertilizer = get_dest_from_source_vectors(&self.soil_to_fertilizer, soil);
+            // Add other maps as needed
+            let location = fertilizer; // Assuming fertilizer is the last mapping
+            if location < smallest_location {
+                smallest_location = location;
+            }
+        }
+
+        smallest_location
+        
+
+    }
+
 
 
 }
@@ -194,6 +254,8 @@ fn get_dest_from_source_vectors(source_vector: &Vec<AlmanacRange>, current_sourc
     }  
     return current_source;
 }
+
+
 
 
 fn main() -> std::io::Result<()> {
@@ -224,7 +286,9 @@ fn main() -> std::io::Result<()> {
     };
 
     let smallest_location = almanac.find_smallest_destination_number();
-    println!("Smallest seed: {}", smallest_location);
+    let smallest_location_v2 = almanac.find_min_location_from_range();
+    println!("Smallest location: {}", smallest_location);
+    println!("Smallest location (range): {}", smallest_location_v2);
 
     Ok(())
 }
