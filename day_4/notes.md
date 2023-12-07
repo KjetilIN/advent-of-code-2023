@@ -13,8 +13,8 @@ Card 6: 31 18 13 56 72 | 74 77 10 23 35 67 36 11
 Where the left side is winning numbers, and the right side is the card numbers
 
 1. Find the total amount of points of all cards
-    a. A match is given 1 point and then every match after that the point is doubled
-2. Given that each card match for card id `n`, adds `n+1, n+2, .. n+matches` card clones - find out how many cards you process in total
+    a. A match is given 1 point and then every match after that - the point is doubled 
+2. Given that each card match for card id `n`, adds card with ID `n+1, n+2, .. n+matches` (card clones) - find out how many cards you process in total
 
 Link to complete description: https://adventofcode.com/2023/day/4
 
@@ -32,10 +32,11 @@ struct Card {
 }
 ```
 
-To find the point for a single card
+To find the points for a single card
 1. Iterate over each winner number
 2. Check if the winning number is in the card number vector
-3. If it is add the total points based on if it is a match or not
+3. If we have a match - increment the total amout of points
+4. Return the total amount of points
 
 
 For the second part, I created a Card Container struct:
@@ -48,15 +49,15 @@ struct CardContainer {
 }
 ```
 
-The card map is a to access cards, given the ID as key. It is never modified.
+The card map is a to access cards, given the ID as key. It is never modified, and treated like a truth table.
 With this struct, I created a function for processing card numbers - `process_cards`:
 
 1. Create a new `cards_to_process` vector. (Could have modified the original card vector, but decided to clone it)
-2. While we have cards to processed
-    a. Remove the first card from `cards_to_process`.
-    b. Find the amount of matches for that card (the number of matches is created by the `Card` constructor)
-    c. Increment the amount of cards processed by 1
-    d. Add new card copies to `cards_to_process` (based on how many matches the card has)
+2. While we have cards to process:
+    1. Remove the first card from `cards_to_process`.
+    2. Find the amount of matches for that card (the number of matches is created by the `Card` constructor)
+    3. Increment the amount of cards processed by 1
+    4. Add new card copies to `cards_to_process` (based on how many matches the card has)
 
 
 ## Code Snippets
