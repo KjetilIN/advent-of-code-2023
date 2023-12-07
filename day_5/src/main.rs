@@ -4,16 +4,39 @@ use std::{
     io::{BufReader, Read},
     path::Path, ops::Range, process::exit,
 };
-
 struct Almanac {
     seeds: Vec<u32>,
-    seed_to_soil: HashMap<u32, u32>,
-    soil_to_fertilizer: HashMap<u32, u32>,
-    fertilizer_to_water: HashMap<u32, u32>,
-    water_to_light: HashMap<u32, u32>,
-    light_to_temperature: HashMap<u32, u32>,
-    temperature_to_humidity: HashMap<u32, u32>,
-    humidity_to_location: HashMap<u32, u32>,
+    seed_to_soil: Vec<AlmanacRange>,
+    soil_to_fertilizer: Vec<AlmanacRange>,
+    fertilizer_to_water: Vec<AlmanacRange>,
+    water_to_light: Vec<AlmanacRange>,
+    light_to_temperature: Vec<AlmanacRange>,
+    temperature_to_humidity: Vec<AlmanacRange>,
+    humidity_to_location: Vec<AlmanacRange>,
+}
+
+struct AlmanacRange{
+    dest_range: Range<u64>,
+    source_range: Range<u64>,
+    length: u64
+}
+
+impl AlmanacRange {
+    fn new(dest:u64, source:u64, range:u64) -> Self{
+        let dest_end = dest.checked_add(range).expect("Overflow in dest + range");
+        let source_end = source.checked_add(range).expect("Overflow in source + range");
+
+        Self {
+            dest_range: dest..dest_end,
+            source_range: source..source_end,
+            length: range,
+        }
+    }
+
+    fn is_initialized(&self) -> bool {
+        // Check if the fields are in a valid state
+        !self.dest_range.is_empty() && !self.source_range.is_empty() && self.length > 0
+    }
 }
 
 impl Almanac {
@@ -21,13 +44,15 @@ impl Almanac {
 
         // Declare all variables that we need to create
         let mut seeds: Vec<u32> = Vec::new();
-        let mut seed_to_soil: HashMap<u32, u32> = HashMap::new();
-        let mut soil_to_fertilizer: HashMap<u32, u32> = HashMap::new();
-        let mut fertilizer_to_water: HashMap<u32, u32> = HashMap::new();
-        let mut water_to_light: HashMap<u32, u32> = HashMap::new();
-        let mut light_to_temperature: HashMap<u32, u32> = HashMap::new();
-        let mut temperature_to_humidity: HashMap<u32, u32> = HashMap::new();
-        let mut humidity_to_location: HashMap<u32, u32> = HashMap::new();
+
+        // Initialize with default values
+        let mut seed_to_soil: Vec<AlmanacRange> = Vec::new();
+        let mut soil_to_fertilizer: Vec<AlmanacRange>= Vec::new();
+        let mut fertilizer_to_water: Vec<AlmanacRange> = Vec::new();
+        let mut water_to_light: Vec<AlmanacRange>= Vec::new();
+        let mut light_to_temperature: Vec<AlmanacRange> = Vec::new();
+        let mut temperature_to_humidity:Vec<AlmanacRange> = Vec::new();
+        let mut humidity_to_location: Vec<AlmanacRange>= Vec::new();
 
 
         // Keep track of the current section
@@ -69,7 +94,7 @@ impl Almanac {
 
             // We have a line of numbers that we need to parse 
             // There should be three numbers
-            let numbers: Vec<u32> = line
+            let numbers: Vec<u64> = line
                                     .split_whitespace()
                                     .map(|s| s.parse().unwrap())
                                     .collect();
@@ -84,13 +109,13 @@ impl Almanac {
             let (dest, source, range) = (numbers[0], numbers[1], numbers[2]);
 
             match current_section.as_str(){
-                "seed-to-soil map" => add_range_to_map(&mut seed_to_soil, dest, source, range),
-                "soil-to-fertilizer map" => add_range_to_map(&mut soil_to_fertilizer, dest, source, range),
-                "fertilizer-to-water map" => add_range_to_map(&mut fertilizer_to_water, dest, source, range),
-                "water-to-light map" => add_range_to_map(&mut water_to_light, dest, source, range),
-                "light-to-temperature map" => add_range_to_map(&mut water_to_light, dest, source, range),
-                "temperature-to-humidity map" => add_range_to_map(&mut water_to_light, dest, source, range),
-                "humidity-to-location map" => add_range_to_map(&mut water_to_light, dest, source, range),
+                "seed-to-soil map" => seed_to_soil.push(AlmanacRange::new(dest, source, range)),
+                "soil-to-fertilizer map" => soil_to_fertilizer.push(AlmanacRange::new(dest, source, range)),
+                "fertilizer-to-water map" => fertilizer_to_water.push(AlmanacRange::new(dest, source, range)),
+                "water-to-light map" => water_to_light.push(AlmanacRange::new(dest, source, range)),
+                "light-to-temperature map" => light_to_temperature.push(AlmanacRange::new(dest, source, range)),
+                "temperature-to-humidity map" => temperature_to_humidity.push(AlmanacRange::new(dest, source, range)),
+                "humidity-to-location map" => humidity_to_location.push(AlmanacRange::new(dest, source, range)),
                 _ =>{}
             }
         }
@@ -103,40 +128,6 @@ impl Almanac {
             return Err("Illegal file".to_string());
         }
 
-        if seed_to_soil.len() == 0 {
-            eprintln!("ERROR: no seeds-to-soil given, length is 0");
-            return Err("Illegal file".to_string());
-        }
-
-        if soil_to_fertilizer.len() == 0 {
-            eprintln!("ERROR: no soil_to_fertilizer given, length is 0");
-            return Err("Illegal file".to_string());
-        }
-
-        if fertilizer_to_water.len() == 0 {
-            eprintln!("ERROR: no fertilizer_to_water given, length is 0");
-            return Err("Illegal file".to_string());
-        }
-
-        if water_to_light.len() == 0 {
-            eprintln!("ERROR: no water_to_light given, length is 0");
-            return Err("Illegal file".to_string());
-        }
-
-        if light_to_temperature.len() == 0 {
-            eprintln!("ERROR: no light_to_temperature given, length is 0");
-            return Err("Illegal file".to_string());
-        }
-
-        if temperature_to_humidity.len() == 0 {
-            eprintln!("ERROR: no temperature_to_humidity, length is 0");
-            return Err("Illegal file".to_string());
-        }
-
-        if humidity_to_location.len() == 0 {
-            eprintln!("ERROR: no humidity_to_location given, length is 0");
-            return Err("Illegal file".to_string());
-        }
 
         // Return a correctly constructed self 
         Ok(Self {
@@ -153,18 +144,6 @@ impl Almanac {
 
 
 
-}
-
-// Function that adds the range of numbers to the correct Hashmap
-fn add_range_to_map(map: &mut HashMap<u32,u32>, dest:u32, source:u32, range:u32 ){
-    let dest_range: Range<u32> = dest..dest+range;
-    let source_range: Range<u32> = source..source+range;
-
-    for (dest_key, source_key) in dest_range.zip(source_range) {
-        map.insert(dest_key, source_key);
-    }
-
-    println!("ADDED");
 }
 
 
