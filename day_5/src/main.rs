@@ -1,49 +1,64 @@
 use std::{
-    collections::HashMap,
     fs::File,
     io::{BufReader, Read},
     path::Path, ops::Range, process::exit,
 };
-struct Almanac {
-    seeds: Vec<u32>,
-    seed_to_soil: Vec<AlmanacRange>,
-    soil_to_fertilizer: Vec<AlmanacRange>,
-    fertilizer_to_water: Vec<AlmanacRange>,
-    water_to_light: Vec<AlmanacRange>,
-    light_to_temperature: Vec<AlmanacRange>,
-    temperature_to_humidity: Vec<AlmanacRange>,
-    humidity_to_location: Vec<AlmanacRange>,
+pub struct Almanac {
+    pub seeds: Vec<u64>,
+    pub seed_to_soil: Vec<AlmanacRange>,
+    pub soil_to_fertilizer: Vec<AlmanacRange>,
+    pub fertilizer_to_water: Vec<AlmanacRange>,
+    pub water_to_light: Vec<AlmanacRange>,
+    pub light_to_temperature: Vec<AlmanacRange>,
+    pub temperature_to_humidity: Vec<AlmanacRange>,
+    pub humidity_to_location: Vec<AlmanacRange>,
 }
 
-struct AlmanacRange{
+pub struct AlmanacRange{
     dest_range: Range<u64>,
     source_range: Range<u64>,
-    length: u64
 }
 
 impl AlmanacRange {
-    fn new(dest:u64, source:u64, range:u64) -> Self{
+    pub fn new(dest:u64, source:u64, range:u64) -> Self{
         let dest_end = dest.checked_add(range).expect("Overflow in dest + range");
         let source_end = source.checked_add(range).expect("Overflow in source + range");
 
         Self {
             dest_range: dest..dest_end,
             source_range: source..source_end,
-            length: range,
         }
     }
 
     fn is_initialized(&self) -> bool {
         // Check if the fields are in a valid state
-        !self.dest_range.is_empty() && !self.source_range.is_empty() && self.length > 0
+        !self.dest_range.is_empty() && !self.source_range.is_empty()
     }
+
+    /// Gets the destination given a source 
+    pub fn get_dest_from_source(&self, source:u64) -> u64{
+        // Check if the given source is in the source length
+        if self.source_range.contains(&source) {
+            if let Some(append_length) = source.checked_sub(self.source_range.start) {
+                return self.dest_range.start + append_length;
+            }
+        }
+
+        source
+    }
+
 }
 
+
+
+
+
+
 impl Almanac {
-    fn with_list(content: &String) -> Result<Self, String> {
+    pub fn with_list(content: &String) -> Result<Self, String> {
 
         // Declare all variables that we need to create
-        let mut seeds: Vec<u32> = Vec::new();
+        let mut seeds: Vec<u64> = Vec::new();
 
         // Initialize with default values
         let mut seed_to_soil: Vec<AlmanacRange> = Vec::new();
@@ -62,8 +77,6 @@ impl Almanac {
         // For each line of the content 
         for line in content.lines(){
 
-            println!("LINE: {}", line);
-
             // Jump over empty lines
             if line.is_empty(){
                 continue;
@@ -71,7 +84,7 @@ impl Almanac {
             
             // If we found the seeds 
             if line.starts_with("seeds:"){
-                let seeds_parsed: Result<Vec<u32>, _> = line[6..].split_whitespace()
+                let seeds_parsed: Result<Vec<u64>, _> = line[6..].split_whitespace()
                                                                  .map(|x| x.parse())
                                                                  .collect();
 
@@ -143,7 +156,43 @@ impl Almanac {
     }
 
 
+    // Find all the smallest destination numbers 
+    pub fn find_smallest_destination_number(&self ) -> u64{
+        let mut smallest_seed: u64 = u64::MAX;
 
+        // For each 
+        for seed in &self.seeds{
+            let soil = get_dest_from_source_vectors(&self.seed_to_soil, seed.clone());
+            let fertilizer = get_dest_from_source_vectors(&self.soil_to_fertilizer, soil);
+            let water = get_dest_from_source_vectors(&self.fertilizer_to_water, fertilizer);
+            let light = get_dest_from_source_vectors(&self.water_to_light, water);
+            let temperature = get_dest_from_source_vectors(&self.light_to_temperature, light);
+            let humidity = get_dest_from_source_vectors(&self.temperature_to_humidity, temperature);
+            let location = get_dest_from_source_vectors(&self.humidity_to_location, humidity);
+            
+            // Change the location
+            if location < smallest_seed{
+                smallest_seed = location;
+            }
+        }
+
+
+        return smallest_seed
+        
+    }
+
+
+
+}
+
+fn get_dest_from_source_vectors(source_vector: &Vec<AlmanacRange>, current_source: u64) -> u64{
+    for almanac_item in source_vector{
+        let new_potential_source = almanac_item.get_dest_from_source(current_source);
+        if new_potential_source != current_source{
+            return new_potential_source;
+        }
+    }  
+    return current_source;
 }
 
 
@@ -166,13 +215,16 @@ fn main() -> std::io::Result<()> {
     buf_reader.read_to_string(&mut content)?;
 
 
-    let test = match Almanac::with_list(&content){
+    let almanac = match Almanac::with_list(&content){
         Ok(instance) => instance,
         Err(_) => {
             eprintln!("ERROR");
             exit(1);
         }
     };
+
+    let smallest_location = almanac.find_smallest_destination_number();
+    println!("Smallest seed: {}", smallest_location);
 
     Ok(())
 }
