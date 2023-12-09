@@ -1,19 +1,23 @@
 use std::{path::Path, fs::File, io::{BufReader, Read}, process::exit};
 
 trait RaceMethods{
-    fn new(distances: Vec<u32>, records: Vec<u32>) -> Result<Self, String> where Self: Sized;
-    fn race(distance: u32, holding_time: u32) ->u32;
-    fn find_ways_to_beat_record(distance: u32, record: u32) -> u32;
-    fn find_total_ways_to_beat_record(&self) ->u32;
+    fn new(distances: Vec<u64>, records: Vec<u64>) -> Result<Self, String> where Self: Sized;
+    fn race(distance: u64, holding_time: u64) ->u64;
+    fn find_ways_to_beat_record(distance: u64, record: u64) -> u64;
+    fn can_beat(distance: u64, record: u64, holding_time: u64) -> bool;
+    fn find_total_ways_to_beat_record(&self) ->u64;
+    fn find_min_time (distance: u64, record: u64) ->u64;
+    fn find_max_time(distance: u64, record: u64, low_init: u64) -> u64;
+    fn find_ways_to_beat_single(distance: u64, record: u64) -> u64;
 }
 
 struct Race{
-    time_vec: Vec<u32>,
-    record_vec: Vec<u32>
+    time_vec: Vec<u64>,
+    record_vec: Vec<u64>
 }
 
 impl RaceMethods for Race {
-    fn new(distances: Vec<u32>, records: Vec<u32>) -> Result<Self, String> where Self: Sized {
+    fn new(distances: Vec<u64>, records: Vec<u64>) -> Result<Self, String> where Self: Sized {
         if distances.len() != records.len(){
             eprintln!("ERROR: distance and record vectors must be the same length");
             return Err("Constructor error".to_string());
@@ -22,9 +26,9 @@ impl RaceMethods for Race {
         Ok(Self { time_vec: distances, record_vec: records })
     }
 
-    fn race(distance: u32, holding_time: u32) ->u32 {
-        let mut result_time: u32 = 0;
-        let mut speed: u32 = 0; 
+    fn race(distance: u64, holding_time: u64) ->u64 {
+        let mut result_time: u64 = 0;
+        let mut speed: u64 = 0; 
         let mut hold_time = holding_time.clone();
         let mut time = distance.clone();
 
@@ -42,9 +46,10 @@ impl RaceMethods for Race {
 
     }
 
-    fn find_ways_to_beat_record(distance: u32, record: u32) -> u32 {
-        let mut ways_to_beat_record: u32 = 0;
+    fn find_ways_to_beat_record(distance: u64, record: u64) -> u64 {
+        let mut ways_to_beat_record: u64 = 0;
         for i in 0..distance{
+
             let time = Self::race(distance, i);
             if time > record{
                 ways_to_beat_record +=1;
@@ -54,9 +59,9 @@ impl RaceMethods for Race {
         ways_to_beat_record
     }
 
-    fn find_total_ways_to_beat_record(&self) ->u32 {
+    fn find_total_ways_to_beat_record(&self) ->u64 {
         let mut counter = 0; 
-        let mut total_ways:u32 = 1;
+        let mut total_ways:u64 = 1;
 
         while  counter  <  self.time_vec.len() {
             let current_record = self.record_vec.get(counter).expect("Error getting record");
@@ -74,17 +79,80 @@ impl RaceMethods for Race {
         total_ways
         
     }
+
+    fn can_beat(distance: u64, record: u64, holding_time: u64) -> bool {
+        Self::race(distance, holding_time) > record
+    }
+
+    fn find_min_time(distance: u64, record: u64) ->u64{
+        let mut holding_time: u64 = 1;
+
+        // Exponential increment
+        while !Race::can_beat(distance, record, holding_time) {
+            holding_time *= 2;
+        }
+
+        // Binary search for refinement
+        let mut low = holding_time / 2;
+        let mut high = holding_time;
+
+        while low < high {
+            let mid = low + (high - low) / 2;
+
+            if Race::can_beat(distance, record, mid) {
+                high = mid;
+            } else {
+                low = mid + 1;
+            }
+        }
+
+        low
+    }
+
+    fn find_max_time(distance: u64, record: u64, low_init: u64) -> u64 {
+    
+        // Binary search for refinement
+        let mut low = low_init;
+        let mut high = distance;
+    
+        while low < high {
+            let mid = low + (high - low) / 2;
+    
+            if Race::can_beat(distance, record, mid) {
+                low = mid + 1;
+            } else {
+                high = mid;
+            }
+        }
+        low
+    }
+
+    fn find_ways_to_beat_single(distance: u64, record: u64) -> u64{
+        let min = Race::find_min_time(distance, record);
+        return Race::find_max_time(distance, record, min) - min;
+    }
 }
 
 
-fn create_number_vector_from_line(index: usize ,line: &str) -> Vec<u32>{
+fn create_number_vector_from_line(index: usize ,line: &str) -> Vec<u64>{
     let line_vec: Vec<_> = line[index..].split_whitespace().collect();
 
-    let numbers: Vec<u32> = line_vec.iter()
+    let numbers: Vec<u64> = line_vec.iter()
     .filter_map(|&s| s.parse().ok())
     .collect();
 
     numbers
+}
+
+fn concatenate_numbers(numbers: Vec<u64>) -> Option<u64> {
+    // Convert each number to a string and concatenate them
+    let concatenated_str: String = numbers.iter().map(|&num| num.to_string()).collect();
+
+    // Parse the concatenated string into a single u64
+    match concatenated_str.parse() {
+        Ok(result) => Some(result),
+        Err(_) => None, // Parsing failed, return None or handle the error accordingly
+    }
 }
 
 
@@ -106,8 +174,8 @@ fn main() -> std::io::Result<()>{
     buf_reader.read_to_string(&mut content)?;
 
     // Create variables 
-    let mut time_vec: Vec<u32> = Vec::new();
-    let mut record_vec: Vec<u32> = Vec::new();
+    let mut time_vec: Vec<u64> = Vec::new();
+    let mut record_vec: Vec<u64> = Vec::new();
 
     // For each line we need to fine the number
     for line in content.lines(){
@@ -122,8 +190,8 @@ fn main() -> std::io::Result<()>{
 
     }
 
-    // Part 1 
-    let race = Race::new(time_vec, record_vec).unwrap_or_else(|err|{
+    // Part 1  => Answer: 4403592
+    let race = Race::new(time_vec.clone(), record_vec.clone()).unwrap_or_else(|err|{
         eprintln!("ERROR: was not able to create race struct: {err}");
         exit(1);
     });
@@ -133,6 +201,27 @@ fn main() -> std::io::Result<()>{
 
     println!("Ways to win total = {ways_to_win_total}");
 
+    // Part 2
+
+    let high_time: u64 =  match concatenate_numbers(time_vec.clone()){
+        Some(numb) => numb,
+        None => {
+            eprintln!("ERROR: was not join time_vec: {:?}", time_vec);
+            exit(1);
+        }
+    };
+
+    let high_record: u64 = match concatenate_numbers(record_vec.clone()){
+        Some(numb) => numb,
+        None => {
+            eprintln!("ERROR: was not join record_vec: {:?}", record_vec);
+            exit(1);
+        }
+    };
+     
+    let ways_to_win_total = Race::find_ways_to_beat_single(high_time, high_record);
+
+    println!("Ways to win (part 2) = {ways_to_win_total}");
 
     Ok(())
 }
