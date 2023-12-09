@@ -2,13 +2,13 @@ use std::{collections::HashMap, path::Path, fs::File, io::{BufReader, Read}, pro
 
 #[derive(Debug)]
 enum Hand {
-    FULL_HOUSE,
-    FIVE_OF_KIND,
-    FOUR_OF_KIND,
-    THREE_OF_KIND,
-    TWO_PAIR,
-    ONE_PAIR,
-    HIGH_CARD,
+    FullHouse,
+    FiveOfKind,
+    FourOfKind,
+    ThreeOfKind,
+    TwoPair,
+    OnePair,
+    HighCard,
 }
 
 #[derive(Debug)]
@@ -26,13 +26,12 @@ struct CardList{
 trait CardListMethods {
     fn new(list: Vec<Card>) -> Self;
     fn sort_by_rank_and_cards(&mut self);
-    fn get_bid_score(&self)->u32;
+    fn get_bid_score(&mut self)->u32;
 }
 
 trait CardMethods {
     fn new(line: &str) -> Option<Self> where Self: Sized;
     fn compare_card(&self, compared_card: &Card) -> Ordering;
-    fn sort_card_chars(&mut self);
 }
 
 impl CardMethods for Card {
@@ -73,15 +72,9 @@ impl CardMethods for Card {
         })
     }
 
-    fn sort_card_chars(&mut self){
-        let mut chars: Vec<char> = self.cards.chars().collect();
-        chars.sort_by(|a, b| a.cmp(b));
-        self.cards = String::from_iter(chars);
-    }
-
     fn compare_card(&self, compared_card: &Card) -> Ordering{
         for (index, char) in self.cards.chars().enumerate(){
-            let current_char_score: u8 =  match char_order(char){
+            let current_char_score: u8 =  match score_char(char){
                 Some(order) => order,
                 None =>{
                     eprintln!("ERROR: retrieving the char order for char '{}' in cards: {}", char, self.cards);
@@ -90,29 +83,27 @@ impl CardMethods for Card {
             };
 
 
-            let compared_card_score: u8 = match char_order(compared_card.cards.chars().nth(index).unwrap()){
+            let compared_card_score: u8 = match score_char(compared_card.cards.chars().nth(index).unwrap()){
                 Some(order) => order,
                 None =>{
-                    eprintln!("ERROR: retrieving the char order for char '{}' in cards: {}", char, self.cards);
+                    eprintln!("ERROR: retrieving the char order for char '{}' in cards: {}", compared_card.cards.chars().nth(index).unwrap(), compared_card.cards);
                     exit(1)
                 }
             };
 
-            if current_char_score < compared_card_score {
-                return Ordering::Less;
-            }
-            
-            if current_char_score > compared_card_score {
-                return Ordering::Greater;
+            match current_char_score.cmp(&compared_card_score) {
+                Ordering::Equal => continue,
+                non_equal_ordering => return non_equal_ordering,
             }
         }
 
-        Ordering::Equal
+        // Compare entire card strings when scores are equal
+        self.cards.cmp(&compared_card.cards)
     }
     
 }
 
-fn char_order(c: char) -> Option<u8> {
+fn score_char(c: char) -> Option<u8> {
     match c {
         'A' => Some(13),
         'K' => Some(12),
@@ -134,13 +125,13 @@ fn char_order(c: char) -> Option<u8> {
 impl Hand {
     fn score(&self)-> u8{
         match self{
-            Hand::FULL_HOUSE => 7,
-            Hand::FIVE_OF_KIND => 6,
-            Hand::FOUR_OF_KIND => 5,
-            Hand::THREE_OF_KIND => 4,
-            Hand::TWO_PAIR => 3,
-            Hand::ONE_PAIR => 2,
-            Hand::HIGH_CARD => 1,
+            Hand::FiveOfKind => 7,
+            Hand::FourOfKind => 6,
+            Hand::FullHouse => 5,
+            Hand::ThreeOfKind => 4,
+            Hand::TwoPair => 3,
+            Hand::OnePair => 2,
+            Hand::HighCard => 1,
         }
     } 
     
@@ -164,30 +155,36 @@ fn classify_card(cards: &str) -> Result<Hand, String> {
     }
 
     let mut max_matches = 0;
+    let mut next_max_matches = 0; 
     let mut pair_count = 0;
 
-    for (_, count) in card_map.iter() {
-        // Check if we have a new top amount of matches
-        if count > &max_matches {
-            // Check for full house
-            if count == &2 && max_matches == 3 {
-                return Ok(Hand::FULL_HOUSE);
-            }
+    let mut sorted_entries: Vec<_> = card_map.into_iter().collect();
+    sorted_entries.sort_by(|a, b| a.0.cmp(&b.0));
 
-            max_matches = *count;
+    for (_, count) in sorted_entries {
+        // Check if we have a new top amount of matches
+        if count > max_matches {
+
+            next_max_matches = max_matches.clone();
+            max_matches = count;
+            
         }
 
-        if count >= &2 {
+        if count >= 2 {
             pair_count += 1;
         }
+    }
+
+    if max_matches == 3 && next_max_matches == 2{
+        return Ok(Hand::FullHouse);
     }
 
     // We have 3, 4 or 5 of a kind return
     if max_matches > 2 {
         match max_matches {
-            3 => return Ok(Hand::THREE_OF_KIND),
-            4 => return Ok(Hand::FOUR_OF_KIND),
-            5 => return Ok(Hand::FIVE_OF_KIND),
+            3 => return Ok(Hand::ThreeOfKind),
+            4 => return Ok(Hand::FourOfKind),
+            5 => return Ok(Hand::FiveOfKind),
             _ => {
                 eprintln!("ERROR: was over 2 matches, but did not fit card type : {max_matches}");
                 return Err("Card Type could not be set".to_string());
@@ -195,9 +192,9 @@ fn classify_card(cards: &str) -> Result<Hand, String> {
         };
     } else {
         match pair_count {
-            1 => return Ok(Hand::ONE_PAIR),
-            2 => return Ok(Hand::TWO_PAIR),
-            _ => return Ok(Hand::HIGH_CARD),
+            1 => return Ok(Hand::OnePair),
+            2 => return Ok(Hand::TwoPair),
+            _ => return Ok(Hand::HighCard),
         };
     }
 }
@@ -209,20 +206,25 @@ impl CardListMethods for CardList {
     }
 
     fn sort_by_rank_and_cards(&mut self) {
-        self.cards.sort_unstable_by(|c1, c2| {
+        self.cards.sort_by(|c1, c2| {
             match c1.hand.score().cmp(&c2.hand.score()) {
-                Ordering::Equal => c1.compare_card(c2),
+                Ordering::Equal =>  return c1.compare_card(&c2),
                 v => v,
             }
         });
     }
 
-    fn get_bid_score(&self)->u32{
+    fn get_bid_score(&mut self)->u32{
+        self.sort_by_rank_and_cards();
+
         let mut rank = 1; 
         let mut sum = 0; 
         for card in self.cards.iter(){
-            sum += rank * card.bid;
-            rank+=1;
+            let card_sum = rank * card.bid;
+            sum += card_sum;
+
+            //println!("{} | {:?} | rank({})*bid({}) = {} | Total = {}", card.cards, card.hand, rank, card.bid, card_sum, sum);
+            rank += 1;
         }
 
         sum
@@ -263,11 +265,10 @@ fn main() -> std::io::Result<()> {
     }
 
     let mut card_list = CardList::new(cards);
-    card_list.sort_by_rank_and_cards();
+    let score = card_list.get_bid_score();
 
-    println!("{:?}", card_list);
-
-    println!("Card bid score = {}", card_list.get_bid_score());
+    //println!("{:?}", card_list.cards);
+    println!("Card bid score = {}", score);
 
     Ok(())
 
