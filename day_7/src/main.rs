@@ -158,8 +158,9 @@ fn classify_card(cards: &str) -> Result<Hand, String> {
     let mut next_max_matches = 0; 
     let mut pair_count = 0;
 
+    // TODO: Not sorting, changes the values WHY!
     let mut sorted_entries: Vec<_> = card_map.into_iter().collect();
-    sorted_entries.sort_by(|a, b| a.0.cmp(&b.0));
+    sorted_entries.sort_by(|a, b| a.1.cmp(&b.1));
 
     for (_, count) in sorted_entries {
         // Check if we have a new top amount of matches
