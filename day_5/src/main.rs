@@ -1,7 +1,7 @@
 use std::{
     fs::File,
     io::{BufReader, Read},
-    path::Path, ops::Range, process::exit, collections::HashSet,
+    path::Path, ops::Range, process::exit,
 };
 pub struct Almanac {
     pub seeds: Vec<u64>,
@@ -30,11 +30,6 @@ impl AlmanacRange {
         }
     }
 
-    fn is_initialized(&self) -> bool {
-        // Check if the fields are in a valid state
-        !self.dest_range.is_empty() && !self.source_range.is_empty()
-    }
-
     /// Gets the destination given a source 
     pub fn get_dest_from_source(&self, source:u64) -> u64{
         // Check if the given source is in the source length
@@ -45,6 +40,22 @@ impl AlmanacRange {
         }
 
         source
+    }
+
+    pub fn get_dest_range_from_source_range(&self, source_range: Range<u64>) -> Range<u64> {
+        if self.source_range.end <= source_range.start || self.source_range.start >= source_range.end {
+            return source_range; // No overlap, return the original source range
+        }
+
+        // Calculate the intersection between the source range and the almanac range
+        let intersection = source_range.start.max(self.source_range.start)..source_range.end.min(self.source_range.end);
+        let intersection_length = source_range.end - source_range.start;
+
+        // Calculate the destination for the intersected range
+        let new_start = self.dest_range.start + (intersection.start - self.source_range.start);
+        let new_end = new_start + intersection_length as u64;
+
+        new_start..new_end
     }
 
 }
@@ -206,33 +217,30 @@ impl Almanac {
         }
 
         
-        let mut unique_locations: HashSet<u64> = HashSet::new();
+        let mut smallest_location: u64 = u64::MAX;
 
-        for almanac_item in &self.seed_to_soil {
-            for seed_range in &ranges {
-                if almanac_item.source_range.end <= seed_range.start || almanac_item.source_range.start >= seed_range.end {
-                    continue; // No intersection between the seed range and the source range
+        // For each 
+        for seed in ranges{
+            let mut seed_vec: Vec<Range<u64>> = Vec::new();
+            seed_vec.push(seed);
+
+            let soil = get_dest_range_from_range_vectors(&self.seed_to_soil, seed_vec);
+            let fertilizer = get_dest_range_from_range_vectors(&self.soil_to_fertilizer, soil);
+            let water = get_dest_range_from_range_vectors(&self.fertilizer_to_water, fertilizer);
+            let light = get_dest_range_from_range_vectors(&self.water_to_light, water);
+            let temperature = get_dest_range_from_range_vectors(&self.light_to_temperature, light);
+            let humidity = get_dest_range_from_range_vectors(&self.temperature_to_humidity, temperature);
+            let location = get_dest_range_from_range_vectors(&self.humidity_to_location, humidity);
+            
+            let mut temp_smallest_range = location.first().unwrap();
+
+            for range in &location{
+                let new_small = temp_smallest_range.start.min(range.start);
+                if new_small < smallest_location{
+                    smallest_location = new_small;
+                    temp_smallest_range = &range;
                 }
 
-                // Calculate the intersection between the seed range and the source range
-                let intersection = seed_range.start.max(almanac_item.source_range.start)..seed_range.end.min(almanac_item.source_range.end);
-
-                // Calculate the destination for the intersected range
-                for seed in intersection {
-                    let new_potential_source = almanac_item.get_dest_from_source(seed);
-                    unique_locations.insert(new_potential_source);
-                }
-            }
-        }
-
-        let mut smallest_location = u64::MAX;
-
-        for &soil in &unique_locations {
-            let fertilizer = get_dest_from_source_vectors(&self.soil_to_fertilizer, soil);
-            // Add other maps as needed
-            let location = fertilizer; // Assuming fertilizer is the last mapping
-            if location < smallest_location {
-                smallest_location = location;
             }
         }
 
@@ -253,6 +261,56 @@ fn get_dest_from_source_vectors(source_vector: &Vec<AlmanacRange>, current_sourc
         }
     }  
     return current_source;
+}
+
+fn get_dest_range_from_range_vectors(source_vector: &Vec<AlmanacRange>, current_source: Vec<Range<u64>>) -> Vec<Range<u64>>{
+    let mut result_ranges: Vec<Range<u64>> = Vec::new();
+
+    for source_range in current_source.into_iter() {
+        let mut remaining_source_range = Some(source_range.clone());
+
+        let mut has_overlap = false;
+
+        for almanac_item in source_vector {
+            if almanac_item.source_range.end <= source_range.start || almanac_item.source_range.start >= source_range.end {
+                continue; // No intersection between the source range and the almanac range
+            }
+
+            has_overlap = true;
+
+            // Calculate the intersection between the source range and the almanac range
+            let intersection = source_range.start.max(almanac_item.source_range.start)..source_range.end.min(almanac_item.source_range.end);
+
+            // If there are non-overlapping parts before the intersection, push them to the result vector
+            if intersection.start > remaining_source_range.as_ref().unwrap().start {
+                let non_overlap_start = remaining_source_range.as_ref().unwrap().start;
+                let non_overlap_end = intersection.start;
+                result_ranges.push(non_overlap_start..non_overlap_end);
+            }
+
+            // Calculate the destination for the intersected range
+            let new_start = almanac_item.dest_range.start + (intersection.start - almanac_item.source_range.start);
+            let length = intersection.end - new_start;
+            let new_end = new_start + length as u64;
+            result_ranges.push(new_start..new_end);
+
+            // Update remaining source range after the intersection
+            remaining_source_range = Some(intersection.end..source_range.end);
+        }
+
+        // If there is no overlap, push the original source range
+        if !has_overlap {
+            result_ranges.push(source_range);
+        }
+
+        // If there are non-overlapping parts after the last intersection, push them to the result vector
+        if let Some(remaining) = remaining_source_range {
+            result_ranges.push(remaining);
+        }
+    }
+
+    result_ranges
+    
 }
 
 
@@ -286,9 +344,10 @@ fn main() -> std::io::Result<()> {
     };
 
     let smallest_location = almanac.find_smallest_destination_number();
-    let smallest_location_v2 = almanac.find_min_location_from_range();
+    // TODO: Do part 2
+    //let smallest_location_v2 = almanac.find_min_location_from_range();
     println!("Smallest location: {}", smallest_location);
-    println!("Smallest location (range): {}", smallest_location_v2);
+    // println!("Smallest location (range): {}", smallest_location_v2);
 
     Ok(())
 }
