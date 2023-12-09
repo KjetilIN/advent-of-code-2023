@@ -7,7 +7,7 @@ trait RaceMethods{
     fn find_ways_to_beat_record(distance: u64, record: u64) -> u64;
     fn can_beat(distance: u64, record: u64, holding_time: u64) -> bool;
     fn find_total_ways_to_beat_record(&self) ->u64;
-    fn find_min_time (distance: u64, record: u64) ->u64;
+    fn find_min_time(distance: u64, record: u64) ->u64;
     fn find_max_time(distance: u64, record: u64, low_init: u64) -> u64;
     fn find_ways_to_beat_single(distance: u64, record: u64) -> u64;
 }
@@ -134,8 +134,6 @@ impl RaceMethods for Race {
     /// Takes a lower limit from where to search from (Used in the binary search)
     /// Uses first uses only binary search
     fn find_max_time(distance: u64, record: u64, low_init: u64) -> u64 {
-    
-        // Binary search for refinement
         let mut low = low_init;
         let mut high = distance;
     
