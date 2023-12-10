@@ -27,11 +27,15 @@ trait CardListMethods {
     fn new(list: Vec<Card>) -> Self;
     fn sort_by_rank_and_cards(&mut self);
     fn get_bid_score(&mut self)->u32;
+
 }
 
 trait CardMethods {
     fn new(line: &str) -> Option<Self> where Self: Sized;
     fn compare_card(&self, compared_card: &Card) -> Ordering;
+    fn has_joker(&self) -> bool;
+    fn replace_joker_with(&mut self, new_char:char);
+    fn classify_card_with_wildcard(&mut self);
 }
 
 impl CardMethods for Card {
@@ -100,6 +104,81 @@ impl CardMethods for Card {
         // Compare entire card strings when scores are equal
         self.cards.cmp(&compared_card.cards)
     }
+
+    fn has_joker(&self) -> bool {
+        match self.cards.find("J"){
+            Some(_) => true,
+            None => false,
+        }
+    }
+
+    fn replace_joker_with(&mut self, new_char:char) {
+        self.cards.replace("J", &new_char.to_string());
+    }
+
+    fn classify_card_with_wildcard(&mut self){
+        if self.cards.chars().count() != 5 {
+            eprintln!("ERROR: card given was invalid: {}", self.cards);
+            exit(1);
+        }
+    
+        let card_chars: Vec<char> = self.cards.chars().collect();
+        let mut card_map: HashMap<char, u32> = HashMap::new();
+    
+        for char in card_chars {
+            if let Some(item) = card_map.get_mut(&char) {
+                *item += 1;
+            } else {
+                card_map.insert(char, 1);
+            }
+        }
+    
+    
+        let mut pairs = 0;
+        let mut max_matches = 0;
+        let mut max_matches_char = ' ';
+        let mut next_max_matches = 0;
+        let mut best_card:char = ' ';
+    
+        let mut sorted_entries: Vec<_> = card_map.into_iter().collect();
+        sorted_entries.sort_by(|a, b| a.1.cmp(&b.1));
+        for (char, count) in sorted_entries {
+            // Check if we have a new top amount of matches
+            if count > max_matches {
+    
+                next_max_matches = max_matches.clone();
+                max_matches = count;
+                max_matches_char = char;
+                
+            }
+    
+            if count >= 2 {
+                pairs += 1;
+            }
+        }
+
+        let has_joker = Self::has_joker(&self);
+    
+        if has_joker{
+            // In case of four of a kind
+            if max_matches == 4{
+                self.replace_joker_with(max_matches_char);
+                self.hand = Hand::FiveOfKind;
+                return;
+            }
+
+            if max_matches == 3{
+                
+            }
+
+
+
+        }else{
+
+        }
+    
+    }
+    
     
 }
 
@@ -199,6 +278,8 @@ fn classify_card(cards: &str) -> Result<Hand, String> {
         };
     }
 }
+
+
 
 impl CardListMethods for CardList {
 
