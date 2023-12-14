@@ -13,7 +13,7 @@
 
 ## Introduction
 
-This is my repository for Advent of Code 2024. In this project, I am working on solving the daily coding challenges from Advent of Code using the Rust programming language. The goal was to learn Rust and become better at programming. For each challenge I have included my own notes, feel free to read them for my explanation. 
+This is my repository for Advent of Code 2023. In this project, I am working on solving the daily coding challenges from Advent of Code using the Rust programming language. The goal was to learn Rust and become better at programming. For each challenge I have included my own notes, feel free to read them for my explanation. 
 
 > While my solutions may not always be the fastest, I prioritize code readability. I firmly believe that readable code is better, although I strive to optimize for speed as well. Additionally, I'm currently learning Rust and facing time constraints due to exams, which occasionally impacts the best practices in my code. Consequently, I'm a bit behind on a few Advent of Code challenges. 
 
@@ -28,6 +28,7 @@ This is my repository for Advent of Code 2024. In this project, I am working on 
 | 4   | Day 4: Scratchcards            | [Read notes here](https://github.com/KjetilIN/advent-of-code-2023/blob/main/day_4/notes.md)           | ⭐⭐      |
 | 5   | Day 5: If You Give A Seed A Fertilizer            | [Read notes here](https://github.com/KjetilIN/advent-of-code-2023/blob/main/day_5/notes.md)           | ⭐       |
 | 6  | Day 6: Wait For It            | [Read notes here](https://github.com/KjetilIN/advent-of-code-2023/blob/main/day_6/notes.md)           | ⭐⭐      |
+| 7  | Day 7: Camel Cards            | [Read notes here](https://github.com/KjetilIN/advent-of-code-2023/blob/main/day_7/notes.md)           | ⭐      |
 
 
 

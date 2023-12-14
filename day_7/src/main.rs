@@ -56,7 +56,7 @@ fn main() -> std::io::Result<()> {
     // Solution 253205868
     println!("Card bid score (part 1) = {}", score_part_one);
 
-    // Solution NOT => 253731519
+    // Solution NOT => 253731519 (should be 253907829)
     println!("Card bid score (part 2) = {}", score_part_two);
 
     Ok(())
