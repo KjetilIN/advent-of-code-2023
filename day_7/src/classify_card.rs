@@ -1,4 +1,4 @@
-use std::{collections::HashMap, process::exit};
+use std::{collections::HashMap, process::exit, char};
 
 use crate::hand::Hand;
 
@@ -86,6 +86,7 @@ pub fn classify_card_with_wildcard(cards: &str) -> Result<Hand, String>{
     let mut pairs = 0;
     let mut max_matches = 0;
     let mut next_max_matches = 0;
+    let mut unique_chars = 0;
 
     let mut sorted_entries: Vec<_> = card_map.into_iter().collect();
     sorted_entries.sort_by(|a, b| a.1.cmp(&b.1));
@@ -101,31 +102,52 @@ pub fn classify_card_with_wildcard(cards: &str) -> Result<Hand, String>{
         if count >= 2 {
             pairs += 1;
         }
+
+        unique_chars+=1;
     }
 
+    
     let has_joker = has_joker(cards);
+    let joker_count = count_jokers(cards);
 
+
+    // Debug print
+    //println!("PAIRS: {pairs}");
+    //println!("Max matches: {max_matches}");
+    //println!("Next Max matches: {next_max_matches}");
+    //println!("Jokers: {joker_count}");
+    
     if has_joker{
         // Count how many joker cards we have 
-        let joker_count:u32 = cards.find("J").unwrap().try_into().unwrap();
+        
 
         // In case of Joker creates a five of a kind:
         // 1. 4 matches and one joker 
         // 2. All jokers 
         // 3. All but one is a joker
-        if (max_matches == 4 && joker_count == 1) || joker_count == 5 || joker_count == 4{
+        // 4. There are only jokers and matches 
+
+        let two_types_of_cards = unique_chars == 2 && joker_count > 0;
+        if (max_matches == 4 && joker_count == 1) || joker_count == 5 || joker_count == 4 || two_types_of_cards{
             return Ok(Hand::FiveOfKind);  
         }
 
         // In case of four of a kind 
-        let has_one_joker = joker_count == 1 && next_max_matches == 1;
-        let has_two_jokers = joker_count == 2 && next_max_matches == 2;
-        if max_matches == 3 && ( has_one_joker || has_two_jokers ) {
+        let has_three_of_kind_and_joker = max_matches == 3 && next_max_matches == 1 && joker_count == 1;
+        let has_two_pairs_with_joker_pair = pairs == 2 && joker_count == 2;
+        if has_two_pairs_with_joker_pair || has_three_of_kind_and_joker{
             return Ok(Hand::FourOfKind);
         }
 
+        // In case of full house
+        let has_two_pairs_and_joker = pairs == 2 && unique_chars == 3 && joker_count == 1;
+        if has_two_pairs_and_joker{
+            return Ok(Hand::FullHouse);
+        }
+
         // In case of three of a kind
-        if max_matches == 2 && joker_count != 2{
+        let has_two_jokers_and_one_card = unique_chars > 2 && joker_count == 2 && max_matches == 2 && next_max_matches == 1;
+        if (max_matches == 2 && joker_count != 2) || has_two_jokers_and_one_card{
             return Ok(Hand::ThreeOfKind);
         }
 
@@ -179,4 +201,8 @@ fn has_joker(cards: &str) -> bool {
         Some(_) => true,
         None => false,
     }
+}
+
+pub fn count_jokers(cards: &str) -> u32{
+    cards.chars().filter(|&ch| ch == 'J').count().try_into().unwrap()
 }

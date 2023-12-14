@@ -67,7 +67,7 @@ impl CardListMethods for CardList {
             let card_sum = rank * card.bid;
             sum += card_sum;
 
-            //println!("{} | {:?} | rank({})*bid({}) = {} | Total = {}", card.cards, card.hand, rank, card.bid, card_sum, sum);
+            println!("{} | {:?} | rank({})*bid({}) = {} | Total = {}\n\n", card.cards, card.hand, rank, card.bid, card_sum, sum);
             rank += 1;
         }
 

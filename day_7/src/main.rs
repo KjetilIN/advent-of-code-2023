@@ -3,6 +3,7 @@ mod card;
 mod classify_card;
 mod score_card;
 mod card_list;
+mod tests;
 
 use std::{path::Path, fs::File, io::{BufReader, Read}, process::exit};
 
@@ -50,8 +51,12 @@ fn main() -> std::io::Result<()> {
     let score_part_one = card_list_part_one.get_bid_score();
     let score_part_two = card_list_part_two.get_bid_score_with_wildcard();
 
-    //println!("{:?}", card_list.cards);
+    //println!("{:#?}", card_list_part_two);
+
+    // Solution 253205868
     println!("Card bid score (part 1) = {}", score_part_one);
+
+    // Solution NOT => 253731519
     println!("Card bid score (part 2) = {}", score_part_two);
 
     Ok(())
