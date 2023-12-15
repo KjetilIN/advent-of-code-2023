@@ -1,6 +1,6 @@
-use std::{path::Path, fs::File, io::{BufReader, Read}, process::exit, collections::{HashMap, HashSet}};
+use std::{path::Path, fs::File, io::{BufReader, Read}, process::exit, collections::HashMap, rc::Rc, cell::RefCell};
 
-use crate::{node::{Node, NodeMethods}, tree_methods::add_node};
+use crate::{node::{Node, NodeMethods}, tree_methods::build_tree_from_map};
 
 mod node;
 mod tree_methods;
@@ -30,8 +30,8 @@ fn main() -> std::io::Result<()> {
 
     let mut steps = String::new();
 
-    let mut root = Node::empty_node((&"e").to_string());
-    let mut nodes_not_added: HashMap<String, Node> = HashMap::new();
+    let mut root = Rc::new(RefCell::new(Node::empty_node((&"root").to_string())));
+    let mut nodes: HashMap<String, (String, String)> = HashMap::new();
 
     // For each line we need to fine the number
     for line in content.lines(){
@@ -48,27 +48,23 @@ fn main() -> std::io::Result<()> {
         }
 
         // If the root node is not set
-        if root.name == "e"{
-            root = match Node::create_nodes(line.to_owned()){
-                Ok(node) => node,
+        if root.borrow().name == "root"{
+            root = match Node::with_line(line.to_string()){
+                Ok(node) => Rc::new(RefCell::new(node)),
                 Err(_) => exit(1),
             } ;
         }
 
-        let mut node_to_add = match Node::create_nodes(line.to_owned()) {
-            Ok(node) => node,
-            Err(_) => exit(1),
-        };
+        let main_node_name = &line[0..3]; 
+        let right_node_name = &line[7..10]; 
+        let left_node_name = &line[12..15]; 
 
-        // Find the node 
-        match add_node(&mut root, &mut node_to_add){
-            Ok(_) => {},
-            Err(_) => {
-                //eprintln!("ERROR: could not add node: {:#?}", node_to_add);
-                nodes_not_added.insert(node_to_add.name.clone(), node_to_add);
-            },
-        }
+        nodes.insert(main_node_name.to_string(), (left_node_name.to_string(), right_node_name.to_string()));        
     }
+
+
+    //println!("Hashmap: {:#?}", nodes);
+    println!("Root: {:#?}", root);
 
 
     Ok(())
