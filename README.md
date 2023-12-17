@@ -29,6 +29,7 @@ This is my repository for Advent of Code 2023. In this project, I am working on 
 | 5   | Day 5: If You Give A Seed A Fertilizer            | [Read notes here](https://github.com/KjetilIN/advent-of-code-2023/blob/main/day_5/notes.md)           | ⭐       |
 | 6  | Day 6: Wait For It            | [Read notes here](https://github.com/KjetilIN/advent-of-code-2023/blob/main/day_6/notes.md)           | ⭐⭐      |
 | 7  | Day 7: Camel Cards            | [Read notes here](https://github.com/KjetilIN/advent-of-code-2023/blob/main/day_7/notes.md)           | ⭐      |
+| 8  | Day 8: Haunted Wasteland            | [Read notes here](https://github.com/KjetilIN/advent-of-code-2023/blob/main/day_8/notes.md)           | ⭐⭐      |
 
 
 
