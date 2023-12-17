@@ -1,9 +1,11 @@
-use std::{path::Path, fs::File, io::{BufReader, Read}, process::exit, collections::HashMap, rc::Rc, cell::RefCell};
+mod network;
+mod test;
+mod lcm;
 
-use crate::{node::{Node, NodeMethods}, tree_methods::build_tree_from_map};
+use std::{path::Path, fs::File, io::{BufReader, Read}, collections::HashMap, process::exit};
 
-mod node;
-mod tree_methods;
+use crate::network::{Network, NetworkMethods, Direction};
+
 
 fn main() -> std::io::Result<()> {
     println!("--- Day 8: Haunted Wasteland ---");
@@ -22,16 +24,11 @@ fn main() -> std::io::Result<()> {
     // Read the content to the mutable variable content
     buf_reader.read_to_string(&mut content)?;
 
-    // Create variables 
-    let mut time_vec: Vec<u64> = Vec::new();
-    let mut record_vec: Vec<u64> = Vec::new();
-
-    let mut has_steps = false;
-
+    // Store the steps in a string variable 
     let mut steps = String::new();
 
-    let mut root = Rc::new(RefCell::new(Node::empty_node((&"root").to_string())));
-    let mut nodes: HashMap<String, (String, String)> = HashMap::new();
+    // Store each node
+    let mut nodes: HashMap<String, Direction> = HashMap::new();
 
     // For each line we need to fine the number
     for line in content.lines(){
@@ -40,31 +37,41 @@ fn main() -> std::io::Result<()> {
             continue;
         }
 
-        // Collect the steps 
-        if !has_steps{
+        // Collect the steps, if not collected before
+        if steps.is_empty(){
             steps = line.trim().to_string();
-            has_steps = true;
             continue;
         }
 
-        // If the root node is not set
-        if root.borrow().name == "root"{
-            root = match Node::with_line(line.to_string()){
-                Ok(node) => Rc::new(RefCell::new(node)),
-                Err(_) => exit(1),
-            } ;
-        }
-
+        // Get the name of the 
         let main_node_name = &line[0..3]; 
-        let right_node_name = &line[7..10]; 
-        let left_node_name = &line[12..15]; 
+        let left_node_name = &line[7..10]; 
+        let right_node_name = &line[12..15]; 
 
-        nodes.insert(main_node_name.to_string(), (left_node_name.to_string(), right_node_name.to_string()));        
+        // Inset the new node
+        nodes.insert(main_node_name.to_string(), Direction::new(left_node_name.to_string(), right_node_name.to_string()));    
     }
 
+    // Create a new network 
+    let network: Network = Network::with_map(nodes);
 
-    //println!("Hashmap: {:#?}", nodes);
-    println!("Root: {:#?}", root);
+    // Count each steps from the start node to the end node
+    let end_node = match network.count_steps(&steps){
+        Ok(end) => end,
+        Err(_) => exit(1),
+    };
+
+    // Count the escape steps for all the starting Z
+    let escape_steps = match network.steps_to_escape_all(&steps){
+        Ok(end) => end,
+        Err(_) => exit(1),
+    };
+
+    // Answer => 13771
+    println!("End node steps (part 1): {end_node}");
+
+    // Answer => 13129439557681
+    println!("End node escape steps (part 2): {escape_steps}");
 
 
     Ok(())
