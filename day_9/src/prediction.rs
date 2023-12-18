@@ -5,6 +5,7 @@ pub struct Prediction {
 pub trait PredictionMethods {
     fn with_numbers(numbers: &str) -> Result<Self, String> where Self: Sized;
     fn predict_next_number(&self) -> i64;
+    fn predict_first_number(&self) -> i64;
 }
 
 impl PredictionMethods for Prediction {
@@ -43,6 +44,40 @@ impl PredictionMethods for Prediction {
         while count < increment_numbers.len(){
             let current_increment = increment_numbers[count];
             let val = result + current_increment;
+            result = val;
+            count+=1;
+        }
+
+        result
+    }
+
+    fn predict_first_number(&self) -> i64 {
+        let mut increment_numbers: Vec<i64> = Vec::new();
+        let mut current_numbers: Vec<i64> = self.numbers.clone();
+        increment_numbers.push(current_numbers.first().unwrap().clone());
+
+        loop {
+            // Get the differences
+            let diff = get_next_sequence(&current_numbers);
+
+            // Check if the all numbers in the sequence are zeros
+            if is_all_zeros(&diff) {
+                break;
+            }
+            increment_numbers.push(diff.first().unwrap().clone());
+
+            current_numbers = diff;
+        }
+
+        // Reverse the string
+        increment_numbers.reverse();
+
+        let mut result: i64 = 0;
+
+        let mut count = 0;
+        while count < increment_numbers.len(){
+            let current_increment = increment_numbers[count];
+            let val = current_increment - result;
             result = val;
             count+=1;
         }

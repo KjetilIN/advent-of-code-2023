@@ -23,6 +23,7 @@ fn main() -> std::io::Result<()>{
     buf_reader.read_to_string(&mut content)?;
 
     let mut part_one_sum = 0;
+    let mut part_two_sum = 0;
 
     for line in content.lines(){
         let prediction = match Prediction::with_numbers(line){
@@ -33,10 +34,12 @@ fn main() -> std::io::Result<()>{
         };
 
         part_one_sum += prediction.predict_next_number();
+        part_two_sum += prediction.predict_first_number();
     }
 
     // Answers for part 1 => 1953784198
-    println!("Extrapolated values: {}", part_one_sum);
+    println!("Extrapolated values - next prediction sum (part 1): {}", part_one_sum);
+    println!("Extrapolated values - first prediction sum (part 2): {}", part_two_sum);
 
     Ok(())
 
