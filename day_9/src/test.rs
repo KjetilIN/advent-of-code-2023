@@ -2,7 +2,6 @@
 mod test{
     use crate::prediction::{Prediction, PredictionMethods};
 
-
     #[test]
 
     fn test_predict_next_1(){

@@ -1,3 +1,5 @@
+/// Represents a prediction structure that is able to predict 
+/// - Has a sequence of numbers as a vector of **i64**
 pub struct Prediction {
     numbers: Vec<i64>,
 }
@@ -9,6 +11,11 @@ pub trait PredictionMethods {
 }
 
 impl PredictionMethods for Prediction {
+    /// Create a new prediction struct
+    ///  - Takes a string with numbers 
+    ///  - Will throw an error if it could not parse the number
+    /// 
+    /// Returns the prediction struct
     fn with_numbers(numbers: &str) -> Result<Self, String> where Self: Sized {
         let numbers_parsed: Result<Vec<i64>, String> = numbers
         .split_whitespace()
@@ -19,7 +26,9 @@ impl PredictionMethods for Prediction {
             numbers: numbers_parsed?,
         })
     }
-
+    
+    /// Given the sequence of numbers, predict the next number in the sequence.
+    /// Returns the next number in the sequence 
     fn predict_next_number(&self) -> i64 {
         let mut increment_numbers: Vec<i64> = Vec::new();
         let mut current_numbers: Vec<i64> = self.numbers.clone();
@@ -51,6 +60,8 @@ impl PredictionMethods for Prediction {
         result
     }
 
+    /// Predict a number before the first number in the sequence.
+    /// Returns this number
     fn predict_first_number(&self) -> i64 {
         let mut increment_numbers: Vec<i64> = Vec::new();
         let mut current_numbers: Vec<i64> = self.numbers.clone();
@@ -86,6 +97,7 @@ impl PredictionMethods for Prediction {
     }
 }
 
+/// Function that returns a vector of the differences between each number
 fn get_next_sequence(numbers: &Vec<i64>) -> Vec<i64> {
     let mut result: Vec<i64> = Vec::new();
 
@@ -95,6 +107,7 @@ fn get_next_sequence(numbers: &Vec<i64>) -> Vec<i64> {
     result
 }
 
+/// Returns true if all values are 0 in the vector
 fn is_all_zeros(numbers: &Vec<i64>) -> bool {
     for numb in numbers {
         if *numb != 0 as i64 {
