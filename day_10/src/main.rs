@@ -2,6 +2,7 @@ use std::{path::Path, fs::File, io::{BufReader, Read}};
 
 mod pipe;
 mod mazemap;
+mod direction;
 
 fn main() -> std::io::Result<()> {
     println!("--- Day 10: Pipe Maze ---");
