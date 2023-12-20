@@ -2,10 +2,10 @@ use crate::{direction::Direction, pipe::{get_pipe, Pipe}};
 
 #[derive(Debug)]
 pub struct MazeMap {
-    map: Vec<char>,
-    start_index: u32,
-    map_width: u32,
-    map_height: u32,
+    pub map: Vec<char>,
+    pub start_index: u32,
+    pub map_width: u32,
+    pub map_height: u32,
 }
 
 pub trait MazeMapMethods {
@@ -35,6 +35,7 @@ impl MazeMapMethods for MazeMap {
 
             line.chars().into_iter().for_each(|ch| map.push(ch));
 
+            println!("Line: {line}");
             map_height += 1;
         }
 
@@ -59,15 +60,7 @@ impl MazeMapMethods for MazeMap {
     }
 
     fn find_starting_pipe(&self) -> Option<(u32, Direction)>{
-        let start_index = match find_start_index(&self.map){
-            Some(value) => value,
-            None => {
-                return None;
-            }
-        };
-
         todo!()
-
     }
 
     fn get_north(&self, index:u32) -> Option<(u32, Direction)> {
@@ -91,7 +84,7 @@ impl MazeMapMethods for MazeMap {
 
     fn get_east(&self, index:u32) -> Option<(u32, Direction)> {
         // Check that top boundary is okay
-        if index > self.map_width{
+        if index + 1 > self.map_width{
             return None;
         }
 

@@ -5,6 +5,7 @@ use crate::mazemap::{MazeMap, MazeMapMethods};
 mod pipe;
 mod mazemap;
 mod direction;
+mod test;
 
 fn main() -> std::io::Result<()> {
     println!("--- Day 10: Pipe Maze ---");
