@@ -1,5 +1,7 @@
 use std::{path::Path, fs::File, io::{BufReader, Read}};
 
+use crate::mazemap::{MazeMap, MazeMapMethods};
+
 mod pipe;
 mod mazemap;
 mod direction;
@@ -11,7 +13,7 @@ fn main() -> std::io::Result<()> {
     let mut content = String::new();
     
     // Open the file of input relative to the folder
-    let path = Path::new("oasis.txt");
+    let path = Path::new("map.txt");
     let file = File::open(&path)?;
 
     // Create a buffer reader for the file. 
@@ -20,6 +22,17 @@ fn main() -> std::io::Result<()> {
 
     // Read the content to the mutable variable content
     buf_reader.read_to_string(&mut content)?;
+
+    let map: MazeMap = match MazeMap::from_file(&content){
+        Ok(m) => m,
+        Err(_) => {
+            eprintln!("ERROR: creating the Mazemap");
+            panic!();
+        }
+    };
+
+    println!("{:#?}", map);
+
 
     Ok(())
 }
