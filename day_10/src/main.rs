@@ -32,7 +32,13 @@ fn main() -> std::io::Result<()> {
         }
     };
 
-    println!("{:#?}", map);
+    let half_circle = match map.count_half_circle(){
+        Err(_) => panic!(),
+        Ok(val) => val,
+
+    };
+
+    println!("Count circle (part 1): {}", half_circle);
 
 
     Ok(())
