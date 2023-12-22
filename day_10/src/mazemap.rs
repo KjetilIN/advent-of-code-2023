@@ -1,4 +1,4 @@
-use crate::{direction::Direction, pipe::{get_pipe, Pipe}};
+use crate::{direction::Direction, pipe::{get_pipe, Pipe}, point::Point, shoe_lace::find_area_from_points};
 
 #[derive(Debug)]
 pub struct MazeMap {
@@ -13,6 +13,8 @@ pub trait MazeMapMethods {
     where
         Self: Sized;
     fn count_half_circle(&self) -> Result<u32, String> ;
+    fn collect_points(&self) -> Result<Vec<Point>, String>;
+    fn count_enclosed_tiles(&self) -> Result<u32, String>;
     fn find_starting_pipe(&self) -> Option<(u32, Direction)>;
     fn get_north(&self, index:u32) -> Option<(u32, Direction)>;
     fn get_east(&self, index:u32) -> Option<(u32, Direction)>;
@@ -262,7 +264,7 @@ impl MazeMapMethods for MazeMap {
             return None;
         }
 
-        let new_index = index + self.map_height;
+        let new_index = index + self.map_width;
         let char = self.map[new_index as usize];
         let pipe: Pipe = get_pipe(char);
 
@@ -274,7 +276,116 @@ impl MazeMapMethods for MazeMap {
             _ => return  None,
         }
     }
+
+    /// Collects and stores all points for the pipe loop.
+    /// Returns a vector of points 
+    fn collect_points(&self) -> Result<Vec<Point>, String> {
+        let mut result: Vec<Point> = Vec::new();
+
+        let (start, direction) = match self.find_starting_pipe(){
+            None => {
+                eprintln!("ERROR: did not find starting pipe");
+                return Err("No pipe connected to start".to_string());
+            }
+            Some((index, dir)) => (index, dir)
+        };
+
+        let mut current_dir = direction;
+        let mut current_index = start;
+
+        result.push(Point::from_vector_index(&start, &self.map_width));
+
+        while current_index != self.start_index{
+            match current_dir{
+                Direction::North => {
+                    let (new_index, new_dir) = match self.get_north(current_index){
+                        Some((ind, dir)) => (ind, dir),
+                        None => {
+                            eprintln!("ERROR: did not find north pipe");
+                            return Err("Not valid north".to_string());
+                        },
+                    };
+
+                    result.push(Point::from_vector_index(&new_index, &self.map_width));
+
+                    current_dir = new_dir;
+                    current_index = new_index;
+                },
+                Direction::South => {
+                    let (new_index, new_dir) = match self.get_south(current_index){
+                        Some((ind, dir)) => (ind, dir),
+                        None => {
+                            eprintln!("ERROR: {}, {}", current_index, self.map[current_index as usize]);
+                            eprintln!("ERROR: did not find south pipe");
+                            return Err("Not valid south".to_string());
+                        },
+                    };
+
+                    result.push(Point::from_vector_index(&new_index, &self.map_width));
+
+                    current_dir = new_dir;
+                    current_index = new_index;
+                },
+                Direction::West => {
+                    let (new_index, new_dir) = match self.get_west(current_index){
+                        Some((ind, dir)) => (ind, dir),
+                        None => {
+                            eprintln!("ERROR: did not find west pipe");
+                            return Err("Not valid west".to_string());
+                        },
+                    };
+
+                    result.push(Point::from_vector_index(&new_index, &self.map_width));
+
+                    current_dir = new_dir;
+                    current_index = new_index;
+                },
+                Direction::East => {
+                    let (new_index, new_dir) = match self.get_east(current_index){
+                        Some((ind, dir)) => (ind, dir),
+                        None => {
+                            eprintln!("ERROR: did not find east pipe");
+                            return Err("Not valid east".to_string());
+                        },
+                    };
+
+                    result.push(Point::from_vector_index(&new_index, &self.map_width));
+
+                    current_dir = new_dir;
+                    current_index = new_index;
+                },
+                Direction::None => {
+                    eprintln!("Found pipe none");
+                    return Err("Not a pipe".to_string());
+                },
+            }
+        }
+
+        return  Ok(result);
+
+    }
+
+    /// Calculates the amount of tiles that are enclosed by the loop.
+    /// Uses Pick's theorem, source: https://en.wikipedia.org/wiki/Pick%27s_theorem 
+    fn count_enclosed_tiles(&self) -> Result<u32, String> {
+        let points = match self.collect_points(){
+            Ok(val) => val,
+            Err(err) => return Err(err),
+        };
+
+        let area = find_area_from_points(&points);
+        let pipes = points.len().clone() as u32;
+
+        // Formula i = A - b/2 - h +1
+        // (h ~= 0 in this case) 
+        let tiles:u32 = area - pipes/2 + 1;
+
+        Ok(tiles)
+
+    }
 }
+
+
 
 /// Given a vector of chars, finds the index of 'S' => starting pipe
 /// Returns none if there are no pipe that fit 

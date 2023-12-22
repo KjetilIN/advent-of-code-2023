@@ -6,6 +6,8 @@ mod pipe;
 mod mazemap;
 mod direction;
 mod test;
+mod point;
+mod shoe_lace;
 
 fn main() -> std::io::Result<()> {
     println!("--- Day 10: Pipe Maze ---");
@@ -33,12 +35,19 @@ fn main() -> std::io::Result<()> {
     };
 
     let half_circle = match map.count_half_circle(){
-        Err(_) => panic!(),
+        Err(_) => panic!("Could not count half circle of pipes"),
+        Ok(val) => val,
+
+    };
+
+    let tiles = match map.count_enclosed_tiles(){
+        Err(_) => panic!("Could not count enclosed tiles"),
         Ok(val) => val,
 
     };
 
     println!("Count circle (part 1): {}", half_circle);
+    println!("Count enclosed tiles (part 2): {tiles}");
 
 
     Ok(())
