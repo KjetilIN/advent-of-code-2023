@@ -1,6 +1,6 @@
 #[cfg(test)]
 mod test{
-    use crate::{mazemap::{MazeMap, MazeMapMethods}, direction::Direction};
+    use crate::{mazemap::{MazeMap, MazeMapMethods}, direction::Direction, shoe_lace::find_area_from_points};
 
 
     #[test]
@@ -366,6 +366,97 @@ mod test{
 
         assert!(count == 4);
     }
+
+    #[test]
+    fn test_find_area(){
+        let content = String::from("...........
+.S-------7.
+.|F-----7|.
+.||.....||.
+.||.....||.
+.|L-7.F-J|.
+.|..|.|..|.
+.L--J.L--J.
+...........");
+
+        let map = match MazeMap::from_file(&content){
+            Ok(val) => val,
+            Err(_) =>{
+                panic!()
+            }
+        };
+
+       let points = match map.collect_points(){
+            Ok(val) => val,
+            Err(_) =>{
+                panic!()
+            }
+        };
+
+        let area = find_area_from_points(&points);
+        println!("Area: {area}");
+
+        assert!(area == 26);
+    }
+
+    #[test]
+    fn test_count_pipes(){
+        let content = String::from("...........
+.S-------7.
+.|F-----7|.
+.||.....||.
+.||.....||.
+.|L-7.F-J|.
+.|..|.|..|.
+.L--J.L--J.
+...........");
+
+        let map = match MazeMap::from_file(&content){
+            Ok(val) => val,
+            Err(_) =>{
+                panic!()
+            }
+        };
+
+       let pipes = match map.collect_points(){
+            Ok(val) => val,
+            Err(_) =>{
+                panic!()
+            }
+        };
+
+        assert!(pipes.len() == 46);
+    }
+
+    #[test]
+    fn test_count_enclosed_tiles(){
+        let content = String::from("...........
+.S-------7.
+.|F-----7|.
+.||.....||.
+.||.....||.
+.|L-7.F-J|.
+.|..|.|..|.
+.L--J.L--J.
+...........");
+
+        let map = match MazeMap::from_file(&content){
+            Ok(val) => val,
+            Err(_) =>{
+                panic!()
+            }
+        };
+
+       let tiles = match map.count_enclosed_tiles(){
+            Ok(val) => val,
+            Err(_) =>{
+                panic!()
+            }
+        };
+
+        assert!(tiles == 4);
+    }
+
 
 
 
