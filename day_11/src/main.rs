@@ -5,6 +5,7 @@ use crate::galaxy_map::{GalaxyMap, GalaxyMethods};
 mod galaxy_map;
 mod expand;
 mod test;
+mod node;
 
 fn main() -> std::io::Result<()> {
     println!("--- Day 11: Cosmic Expansion ---");
@@ -23,10 +24,26 @@ fn main() -> std::io::Result<()> {
     // Read the content to the mutable variable content
     buf_reader.read_to_string(&mut content)?;
 
-    let _galaxy = match GalaxyMap::from_file(content){
+    let galaxy = match GalaxyMap::from_file(content.clone(), 2){
         Ok(g) => g,
         Err(_) => exit(1),
     };
+
+    let sum = match galaxy.find_sum_of_shortest_distances() {
+        Err(_) => exit(1),
+        Ok(val) => val
+    };
+
+
+    // Answer part 1 => 9805264
+    println!("Sum of shortest paths (part 1): {}", sum);
+
+    // Part 2 => to slow
+    let _large_galaxy = match GalaxyMap::from_file(content, 1_000_000){
+        Ok(g) => g,
+        Err(_) => exit(1),
+    };
+
 
 
     Ok(())
