@@ -21,7 +21,11 @@ mod tests{
             Err(_) => panic!("Error during creating the galaxy map"),
         };
 
-        assert!(galaxy.galaxy_indexes.len() == 9)
+        assert!(galaxy.galaxy_indexes.len() == 9);
+
+        for index in galaxy.galaxy_indexes{
+            assert_eq!(galaxy.map.get(index as usize).unwrap(), &'#')
+        }
     }
 
     #[test]

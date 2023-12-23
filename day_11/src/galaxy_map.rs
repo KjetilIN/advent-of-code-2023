@@ -14,24 +14,17 @@ impl GalaxyMethods for GalaxyMap {
     fn from_file(content: String) -> Result<Self, String> where Self: Sized {
         let mut expanded_map = content;
 
-        println!("BEFORE: \n{}", expanded_map);
-
         // Expand the map horizontally 
         expanded_map = match expand_horizontal(&expanded_map){
             Ok(val) => val,
             Err(err) => return Err(err),
         };
-
-        println!("Horizontal: \n{}", expanded_map);
         
         // Expand the map vertically 
         expanded_map = match expand_vertically(&expanded_map){
             Ok(val) => val,
             Err(err) => return Err(err),
         };
-
-        println!("After (BOTH): \n{}", expanded_map);
-
 
         let width = match get_line_length(&expanded_map){
             Ok(val) => val as u32,
