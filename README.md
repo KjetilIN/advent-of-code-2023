@@ -32,6 +32,7 @@ This is my repository for Advent of Code 2023. Working on solving the daily codi
 | 8  | Day 8: Haunted Wasteland            | [Read notes here](https://github.com/KjetilIN/advent-of-code-2023/blob/main/day_8/notes.md)           | ⭐⭐      |
 | 9  | Day 9: Mirage Maintenance         | [Read notes here](https://github.com/KjetilIN/advent-of-code-2023/blob/main/day_9/notes.md)           | ⭐⭐      |
 | 10  | Day 10: Pipe Maze           | [Read notes here](https://github.com/KjetilIN/advent-of-code-2023/blob/main/day_10/notes.md)           | ⭐⭐    |
+| 11  | Day 11: Cosmic Expansion           | [Read notes here](https://github.com/KjetilIN/advent-of-code-2023/blob/main/day_11/notes.md)           | ⭐   |
 
 
 ## Getting Started
