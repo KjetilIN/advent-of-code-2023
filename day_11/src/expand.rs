@@ -1,3 +1,5 @@
+use std::io::repeat;
+
 /// Returns true if any horizontal lines does not contain a galaxy ("#")
 fn should_expand_horizontal(content: &String) -> bool{
     for line in content.lines(){
@@ -49,7 +51,7 @@ fn should_expand_vertical(content: &str) -> (bool, Vec<usize>) {
 
 /// Takes a galaxy map and expands it horizontally  
 /// Returns the new expanded map or an error if map could not be expanded
-pub fn expand_horizontal(expanded_map: &String) -> Result<String, String>{
+pub fn expand_horizontal(expanded_map: &String, expand: usize) -> Result<String, String>{
     let mut result = String::new();
 
     let length = match get_line_length(&expanded_map){
@@ -64,7 +66,7 @@ pub fn expand_horizontal(expanded_map: &String) -> Result<String, String>{
             new_lines.push_str(line);
             new_lines.push('\n');
             if !line.contains("#"){
-                new_lines.push_str(&".".repeat(length));
+                new_lines.push_str(&".".repeat(length *(expand - 1)));
                 new_lines.push('\n');
             }
             
@@ -81,7 +83,7 @@ pub fn expand_horizontal(expanded_map: &String) -> Result<String, String>{
 
 /// Expands the map vertically. 
 /// Finds all the columns that should be expanded adds a new column to the left of empty columns
-pub fn expand_vertically(expanded_map: &String) -> Result<String, String>{
+pub fn expand_vertically(expanded_map: &String, expand: usize) -> Result<String, String>{
 
     let mut result = String::new();
 
@@ -98,7 +100,7 @@ pub fn expand_vertically(expanded_map: &String) -> Result<String, String>{
     
                 // Check if the current column index is in the list of empty columns
                 if indexes.contains(&col) {
-                    modified_line.push('.');
+                    modified_line.push_str(&".".repeat(expand - 1));
                 }
             }
     
